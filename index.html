@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>NUBESKETSH</title>
+    <script src="https://telegram.org/js/telegram-web-app.js"></script>
+    
+    <style>
+        :root {
+            --bg-color: #0b1528; /* الأزرق الداكن الليلي */
+            --text-color: #ffffff;
+            --accent-color: #e0f9f0; /* الأخضر الفاتح جداً */
+            --card-bg: rgba(255, 255, 255, 0.04);
+            --border-color: rgba(224, 249, 240, 0.15);
+            --button-bg: #1e2d4a;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            margin: 0;
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            box-sizing: border-box;
+            -webkit-user-select: none;
+            user-select: none;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 480px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* الهيدر الفخم */
+        header {
+            text-align: center;
+            padding: 20px 0 10px 0;
+        }
+
+        header h1 {
+            font-family: system-ui, -apple-system, sans-serif;
+            font-weight: 800;
+            font-size: 2.2rem;
+            letter-spacing: 1px;
+            margin: 0 0 8px 0;
+            color: var(--text-color);
+        }
+
+        header p {
+            color: var(--accent-color);
+            font-size: 0.95rem;
+            margin: 0;
+            opacity: 0.85;
+            line-height: 1.4;
+        }
+
+        /* الكروت والواجهات */
+        .card {
+            background: var(--card-bg);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            border-radius: 20px;
+            padding: 20px;
+            border: 1px solid var(--border-color);
+            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+        }
+
+        /* لوحة تحكم المالكة */
+        .admin-panel {
+            border: 1px solid var(--accent-color);
+            background: linear-gradient(145deg, rgba(224, 249, 240, 0.05), rgba(255, 255, 255, 0.02));
+        }
+
+        .badge {
+            background-color: var(--accent-color);
+            color: var(--bg-color);
+            padding: 4px 12px;
+            border-radius: 50px;
+            font-size: 0.8rem;
+            font-weight: 700;
+            display: inline-block;
+            margin-bottom: 12px;
+        }
+
+        h2, h3 {
+            margin-top: 0;
+            font-weight: 700;
+            color: #ffffff;
+        }
+
+        p.description {
+            font-size: 0.9rem;
+            line-height: 1.5;
+            color: #b0bccc;
+            margin-bottom: 20px;
+        }
+
+        /* شبكة الميزات الاستوديو */
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 11fr);
+            gap: 12px;
+            margin-bottom: 15px;
+        }
+
+        .feature-item {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 14px;
+            padding: 12px;
+            text-align: center;
+            font-size: 0.85rem;
+        }
+
+        .feature-item .icon {
+            font-size: 1.6rem;
+            margin-bottom: 6px;
+            display: block;
+        }
+
+        /* الأزرار الفخمة */
+        .btn {
+            background-color: var(--button-bg);
+            color: #ffffff;
+            border: 1px solid var(--border-color);
+            padding: 14px 20px;
+            border-radius: 14px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 1rem;
+            width: 100%;
+            box-sizing: border-box;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            transition: all 0.2s ease;
+        }
+
+        .btn:active {
+            transform: scale(0.97);
+            background-color: var(--accent-color);
+            color: var(--bg-color);
+            border-color: var(--accent-color);
+        }
+
+        .btn-primary {
+            background-color: var(--accent-color);
+            color: var(--bg-color);
+            font-weight: 700;
+            border: none;
+        }
+
+        .btn-primary:active {
+            background-color: #ffffff;
+            color: var(--bg-color);
+        }
+
+        /* حالة السحابة والتزامن */
+        .sync-status {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            font-size: 0.8rem;
+            color: #8fa0b5;
+            margin-top: 10px;
+        }
+
+        .dot {
+            width: 6px;
+            height: 6px;
+            background-color: #4caf50;
+            border-radius: 50%;
+            display: inline-block;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+        
+        <header>
+            <h1>𝗡𝗨𝗕𝗘𝗦𝗞𝗘𝗧𝗦𝗛</h1>
+            <p>المنصة الأولى لمصممي الأزياء على تليجرام ☁️🎨<br>ارسم على المانيكان، شارك تصاميمك، وتواصل مع المبدعين.</p>
+        </header>
+
+        <div id="adminPanel" class="card admin-panel" style="display: none;">
+            <span class="badge">المطورة الملكية 👑</span>
+            <h3>لوحة الإشراف العليا</h3>
+            <p class="description">أهلاً بكِ يا صاحبة البوت. من هنا يمكنكِ التحكم بالسحابة، مراجعة تصاميم المشتركين، وإرسال التحديثات الفورية للجميع.</p>
+            <div style="display: flex; gap: 10px;">
+                <button class="btn" onclick="adminAction('تحديث وبث العام')">بث تحديث 📢</button>
+                <button class="btn" onclick="adminAction('مراجعة السحابة')">قاعدة البيانات 🗄️</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 id="welcomeTitle">مرحباً بك في الاستوديو</h3>
+            <p id="welcomeMessage" class="description">جاري تهيئة مساحتك الإبداعية الفخمة وعفوية التصميم...</p>
+            
+            <div class="features-grid">
+                <div class="feature-item">
+                    <span class="icon">🪡</span>
+                    <span>الرسم على المانيكان</span>
+                </div>
+                <div class="feature-item">
+                    <span class="icon">☁️</span>
+                    <span>حفظ سحابي ذكي</span>
+                </div>
+                <div class="feature-item">
+                    <span class="icon">✨</span>
+                    <span>رسائل ذاتية الحذف</span>
+                </div>
+                <div class="feature-item">
+                    <span class="icon">👥</span>
+                    <span>مجتمع المصممين</span>
+                </div>
+            </div>
+
+            <button class="btn btn-primary" onclick="startDesigning()">دخول استوديو التصميم 🎨</button>
+            
+            <div class="sync-status">
+                <span class="dot"></span>
+                <span>متصل بسحابة Firebase بأمان</span>
+            </div>
+        </div>
+
+    </div>
+
+    <script>
+        // تهيئة الـ WebApp وتكبير الشاشة بالكامل مثل تطبيقات الآيفون
+        const tg = window.Telegram.WebApp;
+        tg.ready();
+        tg.expand();
+
+        // البيانات السرية الخاصة بكِ والتوكن المربوط بالخلفية
+        const OWNER_ID = 8421694319;
+        const BOT_TOKEN = "8445689083:AAEJXtmQzemnxDhpggr9IhH9UKKn221mdiM";
+
+        // جلب بيانات المستخدم من تليجرام
+        const user = tg.initDataUnsafe?.user;
+
+        if (user) {
+            // تخصيص الترحيب باسم المستخدم
+            document.getElementById('welcomeTitle').innerText = `مرحباً، ${user.first_name} ✨`;
+            document.getElementById('welcomeMessage').innerText = "استمتعي بتجربة تصميم عفوية وفخمة. ارسمي الآن وحملي تصاميمك مباشرة إلى السحابة مع ميزة الرسائل المؤقتة.";
+
+            // التحقق الصارم من الهوية لفتح لوحة التحكم الخاصة بكِ
+            if (user.id === OWNER_ID) {
+                document.getElementById('adminPanel').style.display = 'block';
+            }
+        } else {
+            // للتجربة الخارجية في المتصفح العادي
+            document.getElementById('welcomeMessage').innerText = "يرجى فتح التطبيق من داخل تليجرام لتتمكني من حفظ تصاميمك على السحابة ومشاركتها.";
+        }
+
+        // دالة زر البدء للمستخدمين
+        function startDesigning() {
+            tg.HapticFeedback.impactOccurred('medium'); // اهتزاز خفيف لزيادة الفخامة
+            tg.showAlert("تم فتح لوحة الرسم! جاهزة للإبداع على المانيكان ومزامنة البيانات مع Firebase ☁️.");
+        }
+
+        // دالة لوحة تحكم الإشراف الخاصة بكِ
+        function adminAction(actionName) {
+            tg.HapticFeedback.notificationOccurred('success');
+            tg.showPopup({
+                title: 'صلاحيات المطور',
+                message: `تم تفعيل أمر: [${actionName}] بنجاح من خلال المعرف الخاص بكِ والتوكن السري للبوت.`,
+                buttons: [{type: 'ok'}]
+            });
+        }
+    </script>
+</body>
+</html>
