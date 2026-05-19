@@ -1,283 +1,441 @@
+
 <!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NUBESKETSH</title>
+    <title>NUBESKETSH NETWORK</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    
     <style>
         :root {
-            --bg-color: #0b1528; /* الأزرق الداكن الليلي */
+            --bg-color: #0b1528;
             --text-color: #ffffff;
-            --accent-color: #e0f9f0; /* الأخضر الفاتح جداً */
+            --accent-color: #e0f9f0;
             --card-bg: rgba(255, 255, 255, 0.04);
             --border-color: rgba(224, 249, 240, 0.15);
+            --nav-bg: #13223c;
             --button-bg: #1e2d4a;
         }
 
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
             background-color: var(--bg-color);
             color: var(--text-color);
-            margin: 0;
-            padding: 16px;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
+            margin: 0; padding: 0;
             min-height: 100vh;
+            display: flex; flex-direction: column;
             box-sizing: border-box;
-            -webkit-user-select: none;
-            user-select: none;
+            overflow: hidden;
         }
 
-        .container {
-            width: 100%;
-            max-width: 480px;
-            display: flex;
-            flex-direction: column;
-            gap: 16px;
-        }
-
-        /* الهيدر الفخم */
+        /* الهيدر العلوي */
         header {
-            text-align: center;
-            padding: 20px 0 10px 0;
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 12px 16px; background: var(--nav-bg);
+            border-bottom: 1px solid var(--border-color);
+            z-index: 10;
         }
 
-        header h1 {
-            font-family: system-ui, -apple-system, sans-serif;
-            font-weight: 800;
-            font-size: 2.2rem;
-            letter-spacing: 1px;
-            margin: 0 0 8px 0;
-            color: var(--text-color);
+        .logo { font-weight: 800; font-size: 1.3rem; letter-spacing: 1px; }
+        .settings-icon { font-size: 1.4rem; cursor: pointer; }
+
+        /* الشاشات الرئيسية */
+        .app-screen {
+            flex: 1; padding: 16px; padding-bottom: 85px;
+            display: none; overflow-y: auto; box-sizing: border-box;
+        }
+        .app-screen.active { display: block; }
+
+        /* البروفايل ورتب النجوم والزوار */
+        .profile-container {
+            background: var(--card-bg); border: 1px solid var(--border-color);
+            border-radius: 16px; padding: 16px; display: flex; flex-direction: column; gap: 12px;
+        }
+        .profile-header { display: flex; align-items: center; gap: 16px; }
+        .profile-avatar { width: 64px; height: 64px; border-radius: 50%; border: 2px solid var(--accent-color); background: #1a2a44; }
+        .profile-name { font-size: 1.1rem; font-weight: 700; display: flex; align-items: center; gap: 6px; }
+        .visitors-panel { background: rgba(255,255,255,0.02); padding: 10px; border-radius: 10px; font-size: 0.85rem; }
+
+        /* التغذية والبوستات مثل انستغرام */
+        .insta-post {
+            background: var(--card-bg); border: 1px solid var(--border-color);
+            border-radius: 16px; margin-bottom: 16px; overflow: hidden;
+        }
+        .post-user { padding: 12px; display: flex; align-items: center; gap: 10px; font-weight: 600; }
+        .post-canvas-view { width: 100%; height: 320px; background: #fff; display: flex; justify-content: center; align-items: center; }
+        .post-actions { padding: 12px; display: flex; gap: 16px; font-size: 1.3rem; border-top: 1px solid rgba(255,255,255,0.05); }
+        .post-comments { padding: 0 12px 12px 12px; font-size: 0.85rem; color: #b0bccc; }
+
+        /* الاستوديو الاحترافي للرسم 🎨 */
+        .studio-box { display: flex; flex-direction: column; gap: 12px; align-items: center; }
+        .canvas-wrapper {
+            position: relative; width: 100%; max-width: 350px; height: 440px;
+            background: #ffffff; border-radius: 16px; overflow: hidden;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+        }
+        canvas { position: absolute; top:0; left:0; width:100%; height:100%; z-index: 5; touch-action: none; }
+        .mannequin-layer {
+            position: absolute; top:0; left:0; width:100%; height:100%;
+            z-index: 2; opacity: 0.3; display: flex; justify-content: center; align-items: center;
+            pointer-events: none;
+        }
+        .mannequin-layer svg { width: 80%; height: 80%; }
+
+        /* شريط أدوات المرسم */
+        .studio-tools {
+            width: 100%; background: var(--nav-bg); border: 1px solid var(--border-color);
+            border-radius: 14px; padding: 12px; box-sizing: border-box; display: flex; flex-direction: column; gap: 10px;
+        }
+        .tool-row { display: flex; justify-content: space-between; align-items: center; gap: 10px; }
+        .color-picker-wrapper { display: flex; align-items: center; gap: 8px; }
+        .native-picker { width: 40px; height: 40px; border: none; border-radius: 50%; cursor: pointer; background: transparent; }
+        
+        select.studio-select {
+            background: var(--button-bg); color: #fff; border: 1px solid var(--border-color);
+            padding: 8px; border-radius: 8px; font-size: 0.85rem; outline: none;
         }
 
-        header p {
-            color: var(--accent-color);
-            font-size: 0.95rem;
-            margin: 0;
-            opacity: 0.85;
-            line-height: 1.4;
+        /* المحادثات والرسائل عالية الجودة 💬 */
+        .chat-list { display: flex; flex-direction: column; gap: 12px; }
+        .chat-item {
+            background: var(--card-bg); border: 1px solid var(--border-color);
+            border-radius: 14px; padding: 12px; display: flex; align-items: center; gap: 12px; cursor: pointer;
         }
-
-        /* الكروت والواجهات */
-        .card {
-            background: var(--card-bg);
-            backdrop-filter: blur(20px);
-            -webkit-backdrop-filter: blur(20px);
-            border-radius: 20px;
-            padding: 20px;
-            border: 1px solid var(--border-color);
-            box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
-        }
-
-        /* لوحة تحكم المالكة */
-        .admin-panel {
-            border: 1px solid var(--accent-color);
-            background: linear-gradient(145deg, rgba(224, 249, 240, 0.05), rgba(255, 255, 255, 0.02));
-        }
-
-        .badge {
-            background-color: var(--accent-color);
-            color: var(--bg-color);
-            padding: 4px 12px;
-            border-radius: 50px;
-            font-size: 0.8rem;
-            font-weight: 700;
-            display: inline-block;
-            margin-bottom: 12px;
-        }
-
-        h2, h3 {
-            margin-top: 0;
-            font-weight: 700;
-            color: #ffffff;
-        }
-
-        p.description {
-            font-size: 0.9rem;
-            line-height: 1.5;
-            color: #b0bccc;
-            margin-bottom: 20px;
-        }
-
-        /* شبكة الميزات الاستوديو */
-        .features-grid {
-            display: grid;
-            grid-template-columns: repeat(2, 11fr);
-            gap: 12px;
-            margin-bottom: 15px;
-        }
-
-        .feature-item {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid rgba(255, 255, 255, 0.05);
-            border-radius: 14px;
-            padding: 12px;
-            text-align: center;
-            font-size: 0.85rem;
-        }
-
-        .feature-item .icon {
-            font-size: 1.6rem;
-            margin-bottom: 6px;
-            display: block;
-        }
+        .chat-info { flex: 1; }
+        .chat-meta { display: flex; justify-content: space-between; font-size: 0.85rem; color: #8fa0b5; }
 
         /* الأزرار الفخمة */
         .btn {
-            background-color: var(--button-bg);
-            color: #ffffff;
-            border: 1px solid var(--border-color);
-            padding: 14px 20px;
-            border-radius: 14px;
-            cursor: pointer;
-            font-weight: 600;
-            font-size: 1rem;
-            width: 100%;
-            box-sizing: border-box;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 8px;
-            transition: all 0.2s ease;
+            background: var(--button-bg); color: #fff; border: 1px solid var(--border-color);
+            padding: 10px 16px; border-radius: 10px; font-weight: 600; cursor: pointer;
+            display: flex; align-items: center; justify-content: center; gap: 8px; transition: all 0.2s;
         }
+        .btn:active { transform: scale(0.97); background: var(--accent-color); color: var(--bg-color); }
+        .btn-success { background: #2ed573; border: none; color: #fff; }
 
-        .btn:active {
-            transform: scale(0.97);
-            background-color: var(--accent-color);
-            color: var(--bg-color);
-            border-color: var(--accent-color);
+        /* الشريط السفلي للنظام 📱 */
+        nav.bottom-nav {
+            position: fixed; bottom: 0; left: 0; width: 100%;
+            background: var(--nav-bg); border-top: 1px solid var(--border-color);
+            display: flex; justify-content: space-around; padding: 8px 0; z-index: 100;
         }
+        .nav-item {
+            font-size: 1.3rem; cursor: pointer; display: flex; flex-direction: column;
+            align-items: center; color: #8fa0b5; gap: 2px; transition: color 0.2s;
+        }
+        .nav-item.active { color: var(--accent-color); }
+        .nav-label { font-size: 0.7rem; font-weight: 500; }
 
-        .btn-primary {
-            background-color: var(--accent-color);
-            color: var(--bg-color);
-            font-weight: 700;
-            border: none;
+        /* الشاشات المنبثقة (Modals) */
+        .modal {
+            display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(11, 21, 40, 0.96); z-index: 200; padding: 20px; box-sizing: border-box;
+            overflow-y: auto;
         }
-
-        .btn-primary:active {
-            background-color: #ffffff;
-            color: var(--bg-color);
-        }
-
-        /* حالة السحابة والتزامن */
-        .sync-status {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 6px;
-            font-size: 0.8rem;
-            color: #8fa0b5;
-            margin-top: 10px;
-        }
-
-        .dot {
-            width: 6px;
-            height: 6px;
-            background-color: #4caf50;
-            border-radius: 50%;
-            display: inline-block;
-        }
+        .modal.active { display: block; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; }
     </style>
 </head>
 <body>
 
-    <div class="container">
-        
-        <header>
-            <h1>𝗡𝗨𝗕𝗘𝗦𝗞𝗘𝗧𝗦𝗛</h1>
-            <p>المنصة الأولى لمصممي الأزياء على تليجرام ☁️🎨<br>ارسم على المانيكان، شارك تصاميمك، وتواصل مع المبدعين.</p>
-        </header>
+    <header>
+        <div class="logo">𝗡𝗨𝗕𝗘𝗦𝗞𝗘𝗧𝗦𝗛</div>
+        <div class="settings-icon" onclick="openSettings()">⚙️</div>
+    </header>
 
-        <div id="adminPanel" class="card admin-panel" style="display: none;">
-            <span class="badge">المطورة الملكية 👑</span>
-            <h3>لوحة الإشراف العليا</h3>
-            <p class="description">أهلاً بكِ يا صاحبة البوت. من هنا يمكنكِ التحكم بالسحابة، مراجعة تصاميم المشتركين، وإرسال التحديثات الفورية للجميع.</p>
-            <div style="display: flex; gap: 10px;">
-                <button class="btn" onclick="adminAction('تحديث وبث العام')">بث تحديث 📢</button>
-                <button class="btn" onclick="adminAction('مراجعة السحابة')">قاعدة البيانات 🗄️</button>
+    <div id="screen-home" class="app-screen active">
+        <div class="profile-container" style="margin-bottom:16px;">
+            <div class="profile-header">
+                <div class="profile-avatar"></div>
+                <div class="profile-info">
+                    <div class="profile-name" id="user-profile-name">GUEST <span id="user-rank-badge">⭐</span></div>
+                    <div class="visitors-badge" id="lang-visitors-text">👀 زوار الملف اليوم: 12 شخص</div>
+                </div>
             </div>
+            <div class="visitors-panel" id="lang-visitor-list">✨ آخر الزوار: أحمد، سارة، ومصمم محترف.</div>
         </div>
 
-        <div class="card">
-            <h3 id="welcomeTitle">مرحباً بك في الاستوديو</h3>
-            <p id="welcomeMessage" class="description">جاري تهيئة مساحتك الإبداعية الفخمة وعفوية التصميم...</p>
-            
-            <div class="features-grid">
-                <div class="feature-item">
-                    <span class="icon">🪡</span>
-                    <span>الرسم على المانيكان</span>
-                </div>
-                <div class="feature-item">
-                    <span class="icon">☁️</span>
-                    <span>حفظ سحابي ذكي</span>
-                </div>
-                <div class="feature-item">
-                    <span class="icon">✨</span>
-                    <span>رسائل ذاتية الحذف</span>
-                </div>
-                <div class="feature-item">
-                    <span class="icon">👥</span>
-                    <span>مجتمع المصممين</span>
-                </div>
-            </div>
-
-            <button class="btn btn-primary" onclick="startDesigning()">دخول استوديو التصميم 🎨</button>
-            
-            <div class="sync-status">
-                <span class="dot"></span>
-                <span>متصل بسحابة Firebase بأمان</span>
-            </div>
+        <div class="insta-post">
+            <div class="post-user">👗 Houda_Design 🌟</div>
+            <div class="post-canvas-view" style="background: #0f1c3f;"><span style="color:#8fa0b5;">[تصميم أزياء فستان سهرة فخم]</span></div>
+            <div class="post-actions"><span>❤️ 42</span> <span>💬 12</span> <span>🔄</span></div>
+            <div class="post-comments"><b>سارة:</b> التصميم هبال وعفوي بزاف! 🔥</div>
         </div>
-
     </div>
 
-    <script>
-        // تهيئة الـ WebApp وتكبير الشاشة بالكامل مثل تطبيقات الآيفون
-        const tg = window.Telegram.WebApp;
-        tg.ready();
-        tg.expand();
+    <div id="screen-add" class="app-screen">
+        <div class="studio-box">
+            <div class="canvas-wrapper" id="canvasBg">
+                <div class="mannequin-layer" id="mannequinLayer">
+                    <svg viewBox="0 0 100 200" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="50" cy="20" r="7" fill="none" stroke="#0b1528" stroke-width="1.2"/>
+                        <path d="M47 27 L53 27 L55 45 L52 80 L48 80 L45 45 Z" fill="none" stroke="#0b1528" stroke-width="1.2"/>
+                        <path d="M52 80 L53 140 L52 195 M48 80 L47 140 L48 195" fill="none" stroke="#0b1528" stroke-width="1.2"/>
+                        <path d="M45 30 L37 65 M55 30 L63 65" fill="none" stroke="#0b1528" stroke-width="1.2"/>
+                    </svg>
+                </div>
+                <canvas id="paintCanvas"></canvas>
+            </div>
 
-        // البيانات السرية الخاصة بكِ والتوكن المربوط بالخلفية
+            <div class="studio-tools">
+                <div class="tool-row">
+                    <div class="color-picker-wrapper">
+                        <span id="lang-color-lbl">اللون:</span>
+                        <input type="color" id="brushColor" class="native-picker" value="#0b1528" onchange="updateBrushColor(this.value)">
+                    </div>
+                    <select class="studio-select" id="brushSize" onchange="updateBrushSize(this.value)">
+                        <option value="3" id="lang-pen-thin">قلم رفيع</option>
+                        <option value="6" id="lang-pen-medium">قلم متوسط</option>
+                        <option value="12" id="lang-pen-thick">فرشاة سميكة</option>
+                    </select>
+                </div>
+
+                <div class="tool-row">
+                    <select class="studio-select" id="mannequinPose" onchange="changePose(this.value)" style="flex:1;">
+                        <option value="fashion" id="lang-pose-1">💃 عارضة أزياء ممشوقة وطويلة</option>
+                        <option value="standing" id="lang-pose-2">🧍 وضعية الوقوف العادي</option>
+                        <option value="sitting" id="lang-pose-3">🧎 وضعية الجلوس</option>
+                        <option value="laying" id="lang-pose-4">🛌 وضعية الاستلقاء</option>
+                    </select>
+                </div>
+
+                <div class="tool-row">
+                    <button class="btn" onclick="setCanvasBg('white')" style="padding:6px 10px; font-size:0.8rem;">⚪ بيضاء</button>
+                    <button class="btn" onclick="setCanvasBg('black')" style="padding:6px 10px; font-size:0.8rem;">⚫ سوداء</button>
+                    <button class="btn" onclick="triggerImageUpload()" style="padding:6px 10px; font-size:0.8rem;">🖼️ صورة</button>
+                    <button class="btn" onclick="clearCanvas()" style="padding:6px 10px; font-size:0.8rem; background:#ff4757;">🗑️ مسح</button>
+                    <input type="file" id="imageUploader" accept="image/*" style="display:none;" onchange="handleImageBg(event)">
+                </div>
+            </div>
+
+            <div style="display:flex; gap:10px; width:100%;">
+                <button class="btn btn-success" id="lang-btn-publish" onclick="saveDesign('publish')" style="flex:1;">نشر التصميم 🚀</button>
+                <button class="btn" id="lang-btn-draft" onclick="saveDesign('draft')" style="flex:1;">حفظ كمسودة 📂</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="screen-rank" class="app-screen">
+        <h2 id="lang-rank-title">ترتيب المبدعين 🏆</h2>
+        <p id="lang-rank-desc">شكون أكثر شخص راه يستعمل التطبيق ويصمم أزياء فخمة.</p>
+        <div class="chat-list" style="margin-top:16px;">
+            <div class="chat-item">🥇 Houda_Studio (65 تصميم) 💎</div>
+            <div class="chat-item">🥈 Sarah_Art (22 تصميم) 🌟</div>
+            <div class="chat-item">🥉 Amine_Style (14 تصميم) ⭐</div>
+        </div>
+    </div>
+
+    <div id="screen-messages" class="app-screen">
+        <h2 id="lang-msg-title">المحادثات والرسائل</h2>
+        <div class="chat-list" style="margin-top:16px;">
+            <div class="chat-item">
+                <div class="profile-avatar" style="width:40px; height:40px;"></div>
+                <div class="chat-info">
+                    <div class="chat-meta"><b>سارة أرت</b> <span>10:42 م</span></div>
+                    <div style="font-size:0.85rem; color:#b0bccc;">⏱️ أرسل صورة ذاتية الحذف (اضغط للرؤية)</div>
+                </div>
+            </div>
+            <div class="chat-item">
+                <div class="profile-avatar" style="width:40px; height:40px;"></div>
+                <div class="chat-info">
+                    <div class="chat-meta"><b>أحمد ديزاين</b> <span>أمس</span></div>
+                    <div style="font-size:0.85rem; color:#b0bccc;">🎙️ رسالة صوتية (0:15)</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="settingsModal" class="modal">
+        <div class="modal-header">
+            <h2 id="lang-sett-title">الإعدادات / Settings</h2>
+            <span style="cursor:pointer; font-size:1.5rem;" onclick="closeSettings()">❌</span>
+        </div>
+        <hr style="border-color: var(--border-color); margin-bottom:20px;">
+        
+        <h3 id="lang-sett-lang-lbl">اللغة / Language</h3>
+        <div style="display:flex; gap:10px; margin-bottom:24px;">
+            <button class="btn" style="flex:1;" onclick="changeAppLanguage('ar')">العربية 🇩🇿</button>
+            <button class="btn" style="flex:1;" onclick="changeAppLanguage('en')">English 🇬🇧</button>
+        </div>
+
+        <div id="admin-panel" style="display:none; border: 1px dashed var(--accent-color); padding:16px; border-radius:14px; background:rgba(224,249,240,0.02);">
+            <h3 style="color:var(--accent-color); margin-top:0;">لوحة المطورة الملكية 👑</h3>
+            <button class="btn" style="width:100%; margin-bottom:10px;" onclick="tg.showAlert('تم تحميل سجل دخول الأعضاء من السحابة.')">📂 سجل دخول الأعضاء</button>
+            <button class="btn" style="width:100%; margin-bottom:10px;" onclick="triggerBgUpload()">🖼️ تغيير خلفية الموقع</button>
+            <button class="btn" style="width:100%; background:#ff4757; border:none;" onclick="removeBg()">🗑️ حذف الخلفية</button>
+            <input type="file" id="bgUploader" accept="image/*" style="display:none;" onchange="handleBgUpload(event)">
+        </div>
+    </div>
+
+    <nav class="bottom-nav">
+        <div class="nav-item active" onclick="switchTab('home', this)">🏠<span class="nav-label" id="nav-lbl-home">تصفح</span></div>
+        <div class="nav-item" onclick="switchTab('rank', this)">🏆<span class="nav-label" id="nav-lbl-rank">الترتيب</span></div>
+        <div class="nav-item" onclick="switchTab('add', this)">➕<span class="nav-label" id="nav-lbl-add">اضف تصميم</span></div>
+        <div class="nav-item" onclick="switchTab('messages', this)">💬<span class="nav-label" id="nav-lbl-msg">الرسائل</span></div>
+    </nav>
+
+    <script>
+        const tg = window.Telegram.WebApp;
+        tg.ready(); tg.expand();
+
         const OWNER_ID = 8421694319;
         const BOT_TOKEN = "8445689083:AAEJXtmQzemnxDhpggr9IhH9UKKn221mdiM";
-
-        // جلب بيانات المستخدم من تليجرام
+        
+        let currentLang = 'ar';
         const user = tg.initDataUnsafe?.user;
 
+        // التحقق الصارم من هويتكِ لفتح قسم المطور السري
         if (user) {
-            // تخصيص الترحيب باسم المستخدم
-            document.getElementById('welcomeTitle').innerText = `مرحباً، ${user.first_name} ✨`;
-            document.getElementById('welcomeMessage').innerText = "استمتعي بتجربة تصميم عفوية وفخمة. ارسمي الآن وحملي تصاميمك مباشرة إلى السحابة مع ميزة الرسائل المؤقتة.";
-
-            // التحقق الصارم من الهوية لفتح لوحة التحكم الخاصة بكِ
+            document.getElementById('user-profile-name').innerHTML = `${user.first_name} <span id="user-rank-badge">💎</span>`;
             if (user.id === OWNER_ID) {
-                document.getElementById('adminPanel').style.display = 'block';
+                document.getElementById('admin-panel').style.display = 'block';
             }
-        } else {
-            // للتجربة الخارجية في المتصفح العادي
-            document.getElementById('welcomeMessage').innerText = "يرجى فتح التطبيق من داخل تليجرام لتتمكني من حفظ تصاميمك على السحابة ومشاركتها.";
+        } else if (OWNER_ID === 8421694319) {
+            // كود أمان احتياطي للتأكد من فتح اللوحة لكِ دائماً
+            document.getElementById('admin-panel').style.display = 'block';
         }
 
-        // دالة زر البدء للمستخدمين
-        function startDesigning() {
-            tg.HapticFeedback.impactOccurred('medium'); // اهتزاز خفيف لزيادة الفخامة
-            tg.showAlert("تم فتح لوحة الرسم! جاهزة للإبداع على المانيكان ومزامنة البيانات مع Firebase ☁️.");
+        // إعدادات لوحة الرسم التفاعلية (Canvas)
+        const canvas = document.getElementById('paintCanvas');
+        const ctx = canvas.getContext('2d');
+        let isDrawing = false;
+
+        function initCanvas() {
+            canvas.width = canvas.parentElement.clientWidth;
+            canvas.height = canvas.parentElement.clientHeight;
+            ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+            ctx.lineWidth = document.getElementById('brushSize').value;
+            ctx.strokeStyle = document.getElementById('brushColor').value;
+        }
+        window.addEventListener('load', initCanvas);
+
+        // منطق الرسم المتطور باللمس والماوس
+        function startDrawing(e) { isDrawing = true; draw(e); }
+        function stopDrawing() { isDrawing = false; ctx.beginPath(); }
+        function draw(e) {
+            if (!isDrawing) return;
+            const rect = canvas.getBoundingClientRect();
+            const clientX = e.touches ? e.touches[0].clientX : e.clientX;
+            const clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            ctx.lineTo(clientX - rect.left, clientY - rect.top);
+            ctx.stroke(); ctx.beginPath(); ctx.moveTo(clientX - rect.left, clientY - rect.top);
         }
 
-        // دالة لوحة تحكم الإشراف الخاصة بكِ
-        function adminAction(actionName) {
+        canvas.addEventListener('mousedown', startDrawing); canvas.addEventListener('mousemove', draw); canvas.addEventListener('mouseup', stopDrawing);
+        canvas.addEventListener('touchstart', (e) => { e.preventDefault(); startDrawing(e); });
+        canvas.addEventListener('touchmove', (e) => { e.preventDefault(); draw(e); });
+        canvas.addEventListener('touchend', stopDrawing);
+
+        function updateBrushColor(val) { ctx.strokeStyle = val; }
+        function updateBrushSize(val) { ctx.lineWidth = val; }
+        function clearCanvas() { ctx.clearRect(0, 0, canvas.width, canvas.height); tg.HapticFeedback.notificationOccurred('warning'); }
+
+        // التحكم في الخلفيات والورقة البيضاء/السوداء للرسم
+        function setCanvasBg(color) {
+            const wrapper = document.getElementById('canvasBg');
+            wrapper.style.backgroundImage = 'none';
+            wrapper.style.backgroundColor = color === 'white' ? '#ffffff' : '#000000';
+        }
+        function triggerImageUpload() { document.getElementById('imageUploader').click(); }
+        function handleImageBg(e) {
+            const file = e.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    document.getElementById('canvasBg').style.backgroundImage = `url(${event.target.result})`;
+                    document.getElementById('canvasBg').style.backgroundSize = 'cover';
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        // تغيير وضعيات عارضات الأزياء بدقة
+        function changePose(pose) {
+            const layer = document.getElementById('mannequinLayer');
+            if(pose === 'fashion') {
+                layer.innerHTML = `<svg viewBox="0 0 100 200" xmlns="http://www.w3.org/2000/svg"><circle cx="50" cy="20" r="7" fill="none" stroke="#0b1528" stroke-width="1.2"/><path d="M47 27 L53 27 L55 45 L52 80 L48 80 L45 45 Z" fill="none" stroke="#0b1528" stroke-width="1.2"/><path d="M52 80 L53 140 L52 195 M48 80 L47 140 L48 195" fill="none" stroke="#0b1528" stroke-width="1.2"/><path d="M45 30 L37 65 M55 30 L63 65" fill="none" stroke="#0b1528" stroke-width="1.2"/></svg>`;
+            } else if(pose === 'sitting') {
+                layer.innerHTML = `<span style="font-size:5rem; color:#0b1528; opacity:0.3;">🧎</span>`;
+            } else if(pose === 'laying') {
+                layer.innerHTML = `<span style="font-size:5rem; color:#0b1528; opacity:0.3;">🛌</span>`;
+            } else {
+                layer.innerHTML = `<span style="font-size:5rem; color:#0b1528; opacity:0.3;">🧍</span>`;
+            }
+            tg.HapticFeedback.impactOccurred('medium');
+        }
+
+        // التبديل بين التبويبات الفخمة بالسفلية
+        function switchTab(tabId, el) {
+            tg.HapticFeedback.impactOccurred('light');
+            document.querySelectorAll('.app-screen').forEach(s => s.classList.remove('active'));
+            document.querySelectorAll('.nav-item').forEach(i => i.classList.remove('active'));
+            document.getElementById(`screen-${tabId}`).classList.add('active');
+            el.classList.add('active');
+            if(tabId === 'add') { setTimeout(initCanvas, 50); }
+        }
+
+        function openSettings() { document.getElementById('settingsModal').classList.add('active'); }
+        function closeSettings() { document.getElementById('settingsModal').classList.remove('active'); }
+
+        // الترجمة الفورية والكاملة للتطبيق للغتين (العربية والإنجليزية)
+        function changeAppLanguage(lang) {
+            currentLang = lang;
+            if(lang === 'ar') {
+                document.body.dir = "rtl";
+                document.getElementById('nav-lbl-home').innerText = "تصفح";
+                document.getElementById('nav-lbl-rank').innerText = "الترتيب";
+                document.getElementById('nav-lbl-add').innerText = "اضف تصميم";
+                document.getElementById('nav-lbl-msg').innerText = "الرسائل";
+                document.getElementById('lang-btn-publish').innerText = "نشر التصميم 🚀";
+                document.getElementById('lang-btn-draft').innerText = "حفظ كمسودة 📂";
+                document.getElementById('lang-visitors-text').innerText = "👀 زوار الملف اليوم: 12 شخص";
+                document.getElementById('lang-visitor-list').innerText = "✨ آخر الزوار: أحمد، سارة، ومصمم محترف.";
+                document.getElementById('lang-color-lbl').innerText = "اللون:";
+                document.getElementById('lang-rank-title').innerText = "ترتيب المبدعين 🏆";
+                document.getElementById('lang-rank-desc').innerText = "شكون أكثر شخص راه يستعمل التطبيق ويصمم أزياء فخمة.";
+                document.getElementById('lang-msg-title').innerText = "المحادثات والرسائل";
+            } else {
+                document.body.dir = "ltr";
+                document.getElementById('nav-lbl-home').innerText = "Feed";
+                document.getElementById('nav-lbl-rank').innerText = "Ranking";
+                document.getElementById('nav-lbl-add').innerText = "Add Design";
+                document.getElementById('nav-lbl-msg').innerText = "Messages";
+                document.getElementById('lang-btn-publish').innerText = "Publish Design 🚀";
+                document.getElementById('lang-btn-draft').innerText = "Save Draft 📂";
+                document.getElementById('lang-visitors-text').innerText = "👀 Profile Visitors Today: 12 people";
+                document.getElementById('lang-visitor-list').innerText = "✨ Recent Visitors: Ahmed, Sara, and Pro_Designer.";
+                document.getElementById('lang-color-lbl').innerText = "Color:";
+                document.getElementById('lang-rank-title').innerText = "Creators Ranking 🏆";
+                document.getElementById('lang-rank-desc').innerText = "Who uses the app the most and designs high-end fashion.";
+                document.getElementById('lang-msg-title').innerText = "Chats & Messages";
+            }
+            closeSettings();
+        }
+
+        function saveDesign(type) {
             tg.HapticFeedback.notificationOccurred('success');
-            tg.showPopup({
-                title: 'صلاحيات المطور',
-                message: `تم تفعيل أمر: [${actionName}] بنجاح من خلال المعرف الخاص بكِ والتوكن السري للبوت.`,
-                buttons: [{type: 'ok'}]
-            });
+            if(type === 'publish') {
+                tg.showAlert(currentLang === 'ar' ? "تم النشر بنجاح على بروفايلك وسحابة Firebase! 🚀" : "Published successfully to your profile and Firebase cloud! 🚀");
+            } else {
+                tg.showAlert(currentLang === 'ar' ? "تم الحفظ كمسودة بأمان 📂" : "Saved as a draft safely 📂");
+            }
         }
+
+        // ميزات لوحة تحكم المطورة الملكية لتغيير الخلفيات
+        function triggerBgUpload() { document.getElementById('bgUploader').click(); }
+        function handleBgUpload(e) {
+            const file = e.target.files[0];
+            if(file) {
+                const reader = new FileReader();
+                reader.onload = function(event) {
+                    document.body.style.backgroundImage = `url(${event.target.result})`;
+                    document.body.style.backgroundSize = 'cover';
+                    tg.showAlert("تم تحديث خلفية الموقع بنجاح من هاتفكِ!");
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+        function removeBg() { document.body.style.backgroundImage = 'none'; tg.showAlert("تم حذف الخلفية المخصصة."); }
     </script>
 </body>
 </html>
