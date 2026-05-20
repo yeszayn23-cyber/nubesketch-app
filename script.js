@@ -1,19 +1,28 @@
-:root { --bg: #000; --text: #fff; --border: #222; }
-body { margin: 0; background: var(--bg); color: var(--text); font-family: sans-serif; overflow: hidden; }
+const canvas = document.getElementById('canvas');
+const ctx = canvas.getContext('2d');
+canvas.width = window.innerWidth;
+canvas.height = window.innerHeight;
 
-.main-header { display: flex; justify-content: space-between; padding: 20px; border-bottom: 1px solid var(--border); }
-#canvas { touch-action: none; background: #000; cursor: crosshair; }
+ctx.strokeStyle = '#ffffff';
+ctx.lineWidth = 5;
+ctx.lineCap = 'round';
 
-.studio-toolbar {
-    position: absolute; top: 100px; left: 10px;
-    background: rgba(20, 20, 20, 0.9); padding: 10px;
-    border-radius: 15px; display: flex; flex-direction: column; gap: 10px;
+let drawing = false;
+
+function setTool(tool, size) {
+    ctx.globalCompositeOperation = (tool === 'eraser') ? 'destination-out' : 'source-over';
+    ctx.lineWidth = size;
 }
-.tool-icon { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 
-.bottom-nav {
-    position: fixed; bottom: 0; width: 100%; height: 70px;
-    background: rgba(0, 0, 0, 0.9); backdrop-filter: blur(10px);
-    display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border);
-}
-.nav-btn-add { width: 50px; height: 50px; border-radius: 15px; border: none; font-size: 1.5rem; }
+function updateColor(color) { ctx.strokeStyle = color; }
+
+canvas.addEventListener('mousedown', () => drawing = true);
+canvas.addEventListener('mouseup', () => { drawing = false; ctx.beginPath(); });
+canvas.addEventListener('mousemove', (e) => {
+    if(!drawing) return;
+    ctx.lineTo(e.clientX, e.clientY);
+    ctx.stroke();
+});
+
+function switchView(view) { console.log("Switching to: " + view); }
+function openSettings() { alert("لوحة الإعدادات الملكية"); }
