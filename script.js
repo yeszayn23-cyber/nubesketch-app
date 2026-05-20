@@ -1,35 +1,19 @@
-// NUBESKETSH PRO - Core Engine
-const tg = window.Telegram.WebApp;
-tg.ready();
+:root { --bg: #000; --text: #fff; --border: #222; }
+body { margin: 0; background: var(--bg); color: var(--text); font-family: sans-serif; overflow: hidden; }
 
-// 1. نظام التبديل بين التبويبات (مثل إنستغرام)
-function switchView(view) {
-    const container = document.getElementById('app-container');
-    
-    // هنا سنقوم لاحقاً بإضافة محتوى كل صفحة
-    if(view === 'home') {
-        container.innerHTML = "<h1>الرئيسية</h1><p>تصاميم الأعضاء ستظهر هنا...</p>";
-    } else if(view === 'studio') {
-        // هنا سنفتح صفحة الرسم (ibisPaint logic)
-        container.innerHTML = "<h1>الاستوديو</h1><p>ابدأ برسم تصميمك الجديد...</p>";
-    }
-    // يمكننا إضافة الترتيب والرسائل بنفس الطريقة
+.main-header { display: flex; justify-content: space-between; padding: 20px; border-bottom: 1px solid var(--border); }
+#canvas { touch-action: none; background: #000; cursor: crosshair; }
+
+.studio-toolbar {
+    position: absolute; top: 100px; left: 10px;
+    background: rgba(20, 20, 20, 0.9); padding: 10px;
+    border-radius: 15px; display: flex; flex-direction: column; gap: 10px;
 }
+.tool-icon { width: 40px; height: 40px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
 
-// 2. نظام التحقق من المالكة (الأمن)
-const OWNER_ID = 8421694319; 
-const user = tg.initDataUnsafe.user;
-
-if (user && user.id == OWNER_ID) {
-    console.log("Welcome Owner - Admin Mode Active");
-    // هنا سنضيف لاحقاً زر "لوحة التحكم" المخفي
+.bottom-nav {
+    position: fixed; bottom: 0; width: 100%; height: 70px;
+    background: rgba(0, 0, 0, 0.9); backdrop-filter: blur(10px);
+    display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border);
 }
-
-// 3. إعدادات اللغة (بناءً على تليجرام)
-const lang = tg.initDataUnsafe.user?.language_code || 'en';
-console.log("Current Language:", lang);
-
-// وظيفة فتح الإعدادات (ستضاف في التحديث القادم)
-function openSettings() {
-    alert("جارٍ فتح لوحة الإعدادات...");
-}
+.nav-btn-add { width: 50px; height: 50px; border-radius: 15px; border: none; font-size: 1.5rem; }
