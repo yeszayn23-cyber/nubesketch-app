@@ -1,0 +1,80 @@
+/* NUBESKETSH PRO - Luxury Design System */
+:root {
+    --bg: #000000;
+    --surface: #0a0a0a;
+    --text: #ffffff;
+    --text-dim: #666666;
+    --accent: #ffffff;
+    --border: #1a1a1a;
+}
+
+body {
+    margin: 0;
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    overflow-x: hidden;
+}
+
+/* الهيدر الفخم */
+.main-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px;
+    border-bottom: 1px solid var(--border);
+}
+
+.logo {
+    font-weight: 800;
+    font-size: 1.4rem;
+    letter-spacing: 1px;
+}
+
+.settings-trigger {
+    background: none;
+    border: none;
+    color: var(--text);
+    cursor: pointer;
+}
+
+/* الشريط السفلي الاحترافي */
+.bottom-nav {
+    position: fixed;
+    bottom: 0;
+    width: 100%;
+    height: 70px;
+    background: rgba(0, 0, 0, 0.95);
+    backdrop-filter: blur(15px);
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    border-top: 1px solid var(--border);
+}
+
+.nav-btn {
+    background: none;
+    border: none;
+    color: var(--text-dim);
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+.nav-btn:hover { color: var(--text); }
+
+/* زر الـ + الفخم */
+.nav-btn-add {
+    width: 45px;
+    height: 45px;
+    background: var(--text);
+    color: var(--bg);
+    border-radius: 12px;
+    border: none;
+    font-size: 1.5rem;
+    font-weight: bold;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
