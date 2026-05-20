@@ -1,84 +1,31 @@
 <!DOCTYPE html>
-<html lang="ar" dir="rtl" id="appRoot">
+<html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>NUBESKETSH PRO</title>
+    <link rel="stylesheet" href="style.css">
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
-    <style>
-        :root { --bg: #000000; --ui: #111111; --text: #ffffff; --accent: #ffffff; --border: #222222; }
-        body { margin: 0; background: var(--bg); color: var(--text); font-family: -apple-system, sans-serif; }
-
-        /* الأيقونات الهندسية - فخامة بدون إيموجي */
-        .icon-svg { width: 24px; height: 24px; stroke: var(--text); stroke-width: 1.5; fill: none; }
-
-        /* الإعدادات واللوحة الملكية */
-        .settings-modal { position: fixed; top: 0; right: -100%; width: 100%; height: 100%; background: var(--bg); z-index: 1000; transition: 0.3s; padding: 20px; }
-        .admin-panel { border: 1px solid var(--border); padding: 15px; border-radius: 12px; margin-top: 20px; }
-
-        /* التبويبات */
-        .tab-content { display: none; padding-bottom: 80px; }
-        .tab-content.active { display: block; }
-
-        /* شريط التنقل السفلي */
-        .nav-bar { position: fixed; bottom: 0; width: 100%; height: 70px; background: rgba(0,0,0,0.9); backdrop-filter: blur(10px); display: flex; justify-content: space-around; align-items: center; border-top: 1px solid var(--border); }
-    </style>
 </head>
 <body>
 
-    <header style="display:flex; justify-content:space-between; padding:20px;">
-        <div style="font-weight:800; font-size:1.2rem;">NUBESKETSH</div>
-        <div onclick="toggleSettings()"><svg class="icon-svg"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg></div>
+    <header class="main-header">
+        <div class="logo">NUBESKETSH</div>
+        <button class="settings-trigger" onclick="openSettings()">
+            <svg viewBox="0 0 24 24" width="24" height="24" stroke="currentColor" fill="none" stroke-width="1.5"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
     </header>
 
-    <div id="settings" class="settings-modal">
-        <button onclick="toggleSettings()">إغلاق</button>
-        <div id="admin-section" class="admin-panel" style="display:none;">
-            <h3>لوحة التحكم (المالكة)</h3>
-            <button onclick="changeBackground()">تغيير خلفية الموقع</button>
-        </div>
-    </div>
+    <main id="app-container">
+        </main>
 
-    <div id="home" class="tab-content active"></div>
-    <div id="studio" class="tab-content"></div>
-
-    <nav class="nav-bar">
-        <div onclick="switchTab('home')">الرئيسية</div>
-        <div onclick="switchTab('ranking')">الترتيب</div>
-        <div onclick="switchTab('studio')" style="border:1px solid #fff; padding:10px; border-radius:50%;">+</div>
-        <div onclick="switchTab('messages')">الرسائل</div>
+    <nav class="bottom-nav">
+        <button class="nav-btn" onclick="switchView('home')">الرئيسية</button>
+        <button class="nav-btn" onclick="switchView('ranking')">الترتيب</button>
+        <button class="nav-btn-add" onclick="switchView('studio')">+</button>
+        <button class="nav-btn" onclick="switchView('messages')">الرسائل</button>
     </nav>
 
-    <script>
-        const OWNER_ID = 8421694319;
-        const tg = window.Telegram.WebApp;
-        tg.ready();
-
-        // نظام التحقق من المالكة (عرض لوحة التحكم فقط لها)
-        if (tg.initDataUnsafe.user?.id == OWNER_ID) {
-            document.getElementById('admin-section').style.display = 'block';
-        }
-
-        function switchTab(tabId) {
-            document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
-            document.getElementById(tabId).classList.add('active');
-        }
-
-        function toggleSettings() {
-            const s = document.getElementById('settings');
-            s.style.right = (s.style.right === '0px') ? '-100%' : '0px';
-        }
-
-        // منطق تغيير الخلفية
-        function changeBackground() {
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.onchange = e => {
-                const url = URL.createObjectURL(e.target.files[0]);
-                document.body.style.backgroundImage = `url(${url})`;
-            };
-            input.click();
-        }
-    </script>
+    <script src="script.js"></script>
 </body>
 </html>
