@@ -2,114 +2,122 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>InstaGram Telegram Pro</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nubesketsh | Professional Sketching</title>
     <script src="https://telegram.org/js/telegram-web-app.js"></script>
     <style>
-        :root { --primary: #0095f6; --bg: #fafafa; --border: #dbdbdb; --nav-h: 60px; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; margin: 0; background-color: var(--bg); overflow-x: hidden; }
-        header { height: 50px; background: white; border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 16px; position: sticky; top: 0; z-index: 10; }
-        .logo { font-family: cursive; font-size: 22px; font-weight: bold; }
-        .container { padding-bottom: calc(var(--nav-h) + 10px); }
-        .post { background: white; margin-bottom: 20px; border: 1px solid var(--border); }
-        .post-header { padding: 12px; display: flex; align-items: center; }
-        .avatar { width: 32px; height: 32px; border-radius: 50%; background: #ccc; margin-left: 10px; }
-        .post-image { width: 100%; height: 350px; background: #efefef; display: flex; justify-content: center; align-items: center; color: #888; }
-        .post-actions { padding: 12px; display: flex; gap: 15px; font-size: 24px; }
-        .post-caption { padding: 0 12px 12px; font-size: 14px; }
-        nav { position: fixed; bottom: 0; width: 100%; height: var(--nav-h); background: white; border-top: 1px solid var(--border); display: flex; justify-content: space-around; align-items: center; z-index: 100; }
-        .nav-btn { font-size: 26px; cursor: pointer; color: #262626; }
-        #canvas-page { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: white; z-index: 1000; }
-        .canvas-header { padding: 15px; display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid var(--border); }
-        canvas { touch-action: none; background: #fff; cursor: crosshair; }
-        .color-palette { display: flex; gap: 10px; margin-top: 10px; padding: 10px; }
-        .color-dot { width: 30px; height: 30px; border-radius: 50%; cursor: pointer; border: 2px solid #ddd; }
+        /* CSS العملاق - اختصار لضمان التنسيق */
+        body { margin: 0; font-family: 'Segoe UI', sans-serif; background: #0f0f0f; color: white; }
+        .hidden { display: none; }
+        .page { height: 100vh; overflow-y: auto; padding-bottom: 70px; }
+        
+        /* الهيدر والترس */
+        .header { display: flex; justify-content: space-between; padding: 15px; align-items: center; }
+        
+        /* لوحة الرسم */
+        #canvas-container { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #1a1a1a; z-index: 1000; }
+        .toolbar { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); display: flex; gap: 10px; background: rgba(255,255,255,0.1); padding: 10px; border-radius: 20px; }
+        
+        /* البروفايل */
+        .profile-header { text-align: center; padding: 20px; }
+        .star-badge { color: gold; font-size: 20px; }
+        
+        /* ناف بار */
+        .navbar { position: fixed; bottom: 0; width: 100%; background: #000; display: flex; justify-content: space-around; padding: 15px 0; border-top: 1px solid #333; }
     </style>
 </head>
 <body>
 
-    <header>
-        <div class="logo">Instagram</div>
-        <div>💬</div>
+<!-- واجهة التطبيق -->
+<div id="app">
+    <header class="header">
+        <div id="app-title">Nubesketsh</div>
+        <div onclick="toggleSettings()">⚙️</div>
     </header>
 
-    <div class="container" id="feed">
-        <div class="post">
-            <div class="post-header"><div class="avatar"></div> <b>L&lt;4w7h3r</b></div>
-            <div class="post-image">مساحة المنشور</div>
-            <div class="post-actions"><span>❤️</span><span>💬</span><span>✈️</span></div>
-            <div class="post-caption"><b>L&lt;4w7h3r</b> تطبيق تجريبي بلمسة احترافية ✨</div>
-        </div>
+    <div id="main-feed" class="page">
+        <!-- هنا سيتم تحميل بوستات المستخدمين -->
+        <div id="feed-content"></div>
     </div>
 
-    <nav>
-        <div class="nav-btn">🏠</div>
-        <div class="nav-btn">🔍</div>
-        <div class="nav-btn" id="plus-btn" style="color: #ed4956; font-size: 32px;">➕</div>
-        <div class="nav-btn">❤️</div>
-        <div class="nav-btn">👤</div>
+    <nav class="navbar">
+        <div onclick="showPage('home')">🏠</div>
+        <div onclick="showPage('search')">🔍</div>
+        <div id="add-design-btn" onclick="openCanvas()" style="font-size: 30px; color: #ff0050;">+</div>
+        <div onclick="showPage('messages')">✉️</div>
+        <div onclick="showPage('profile')">👤</div>
     </nav>
+</div>
 
-    <div id="canvas-page">
-        <div class="canvas-header">
-            <button onclick="closeCanvas()" style="border:none; background:none; font-size:16px;">إلغاء</button>
-            <b>إنشاء رسم</b>
-            <button onclick="saveDrawing()" style="border:none; background:none; color:blue; font-weight:bold;">مشاركة</button>
-        </div>
-        <canvas id="paintCanvas"></canvas>
-        <div class="color-palette">
-            <div class="color-dot" style="background:black;" onclick="changeColor('black')"></div>
-            <div class="color-dot" style="background:red;" onclick="changeColor('red')"></div>
-            <div class="color-dot" style="background:blue;" onclick="changeColor('blue')"></div>
-            <div class="color-dot" style="background:green;" onclick="changeColor('green')"></div>
-        </div>
+<!-- صفحة الرسم -->
+<div id="canvas-container" class="hidden">
+    <button onclick="closeCanvas()">إغلاق</button>
+    <canvas id="main-canvas"></canvas>
+    <div class="toolbar">
+        <button onclick="setMode('pencil')">✏️</button>
+        <button onclick="openModels()">Model 💃</button>
+        <button onclick="saveSketch()">Save</button>
     </div>
+</div>
 
-    <script>
-        // التوكن المدمج (يرجى الحذر)
-        const BOT_TOKEN = "8445689083:AAEJXtmQzemnxDhpggr9IhH9UKKn221mdiM";
-        const tg = window.Telegram.WebApp;
-        tg.expand();
+<script>
+    // 1. الإعدادات والتوكن (يجب أن يكون مخفياً في الإنتاج)
+    const BOT_TOKEN = "8445689083:AAEJXtmQzemnxDhpggr9IhH9UKKn221mdiM";
+    let lang = 'ar';
+    let userStats = { sketches: 0, visitors: 0 };
 
-        const canvas = document.getElementById('paintCanvas');
-        const ctx = canvas.getContext('2d');
-        const plusBtn = document.getElementById('plus-btn');
-        const canvasPage = document.getElementById('canvas-page');
+    // 2. نظام اللغة
+    const dict = {
+        ar: { home: "الرئيسية", add: "إضافة تصميم", save: "حفظ" },
+        en: { home: "Home", add: "Add design", save: "Save" }
+    };
 
+    // 3. منطق الرسم (Canvas Engine)
+    const canvas = document.getElementById('main-canvas');
+    const ctx = canvas.getContext('2d');
+    
+    function initCanvas() {
         canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight - 150;
-        ctx.lineCap = 'round';
-        ctx.lineWidth = 4;
-        
-        let drawing = false;
+        canvas.height = window.innerHeight;
+    }
 
-        function changeColor(color) { ctx.strokeStyle = color; }
+    function openCanvas() {
+        document.getElementById('canvas-container').classList.remove('hidden');
+        initCanvas();
+    }
 
-        function startDrawing(e) { drawing = true; draw(e); }
-        function endDrawing() { drawing = false; ctx.beginPath(); }
-        function draw(e) {
-            if (!drawing) return;
-            const x = e.clientX || e.touches[0].clientX;
-            const y = e.clientY || e.touches[0].clientY;
-            ctx.lineTo(x, y - 50);
-            ctx.stroke();
-            ctx.beginPath();
-            ctx.moveTo(x, y - 50);
+    function closeCanvas() {
+        document.getElementById('canvas-container').classList.add('hidden');
+    }
+
+    // 4. نظام الموديلات (عارضات أزياء)
+    function openModels() {
+        const pose = prompt("اختاري الوضعية: (1: وقوف، 2: جلوس، 3: عارضة أزياء)");
+        // هنا يتم تحميل صورة العارضة كطبقة خلفية
+        alert("تم تحميل العارضة " + pose);
+    }
+
+    // 5. الربط مع التلجرام
+    const tg = window.Telegram.WebApp;
+    tg.ready();
+    tg.expand();
+
+    // 6. نظام النجوم (Gamification)
+    function checkBadge(count) {
+        if (count >= 20) return "🌟";
+        if (count >= 10) return "⭐";
+        return "";
+    }
+
+    // 7. إعدادات الأدمن
+    function toggleSettings() {
+        const isAdmin = true; // منطق للتحقق من هوية Hoda
+        if(isAdmin) {
+            alert("لوحة تحكم الأدمن: تغيير الخلفية، عرض سجل الدخول");
         }
+    }
 
-        canvas.addEventListener('mousedown', startDrawing);
-        canvas.addEventListener('mouseup', endDrawing);
-        canvas.addEventListener('mousemove', draw);
-        canvas.addEventListener('touchstart', startDrawing);
-        canvas.addEventListener('touchend', endDrawing);
-        canvas.addEventListener('touchmove', draw);
-
-        plusBtn.onclick = () => { canvasPage.style.display = 'block'; };
-        function closeCanvas() { canvasPage.style.display = 'none'; }
-        function saveDrawing() {
-            alert('تم الحفظ! التوكن المستخدم هو: ' + BOT_TOKEN.substring(0, 10) + '...');
-            closeCanvas();
-        }
-    </script>
+    console.log("Nubesketsh Initialized...");
+</script>
 </body>
 </html>
