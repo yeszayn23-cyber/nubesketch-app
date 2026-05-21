@@ -1,5 +1,0 @@
-name: nubesketch
-description: NubeSketch App
-dependencies:
-  flutter:
-    sdk: flutter
