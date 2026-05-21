@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>تطبيق الرسم الاحترافي</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        body {
+            background-color: #f0f2f5;
+            display: flex;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        /* شريط الأدوات الجانبي */
+        .toolbar {
+            width: 280px;
+            background-color: #ffffff;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+            gap: 20px;
+            z-index: 10;
+            overflow-y: auto;
+        }
+
+        h3 {
+            color: #333;
+            font-size: 16px;
+            border-bottom: 2px solid #f0f2f5;
+            padding-bottom: 5px;
+            margin-bottom: 10px;
+        }
+
+        .section {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        /* أزرار الأدوات */
+        .grid-tools {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .btn {
+            background-color: #f8f9fa;
+            border: 1px solid #ced4da;
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn:hover {
+            background-color: #e9ecef;
+        }
+
+        .btn.active {
+            background-color: #007bff;
+            color: white;
+            border-color: #007bff;
+        }
+
+        /* التحكم بالحجم */
+        .range-picker {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        input[type="range"] {
+            flex: 1;
+            cursor: pointer;
+        }
+
+        /* لوحة الألوان */
+        .color-palette {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+        }
+
+        .color-circle {
+            width: 35px;
+            height: 35px;
+            border-radius: 50%;
+            cursor: pointer;
+            border: 2px solid transparent;
+            transition: transform 0.1s;
+        }
+
+        .color-circle:hover {
+            transform: scale(1.1);
+        }
+
+        .color-circle.selected {
+            border-color: #000;
+            box-shadow: 0 0 5px rgba(0,0,0,0.3);
+        }
+
+        #customColor {
+            width: 100%;
+            height: 40px;
+            border: 1px solid #ced4da;
+            border-radius: 8px;
+            cursor: pointer;
+            padding: 2px;
+        }
+
+        /* منطقة الرسم */
+        .canvas-container {
+            flex: 1;
+            position: relative;
+            background-color: #e4e7eb;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        canvas {
+            background-color: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            cursor: crosshair;
+        }
+
+        /* أزرار التحكم العلوي والسفلي */
+        .actions-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 10px;
+        }
+
+        .btn-danger { background-color: #ffe3e3; color: #dc3545; border-color: #ffc9c9; }
+        .btn-danger:hover { background-color: #dc3545; color: white; }
+        
+        .btn-success { background-color: #e3f9e5; color: #28a745; border-color: #c3e6cb; }
+        .btn-success:hover { background-color: #28a745; color: white; }
+    </style>
+</head>
+<body>
+
+    <!-- شريط الأدوات الجانبي -->
+    <div class="toolbar">
+        <!-- قسم الأدوات -->
+        <div class="section">
+            <h3>الأدوات والفرش</h3>
+            <div class="grid-tools">
+                <button class="btn active" id="tool-brush">🖌️ فرشاة</button>
+                <button class="btn" id="tool-eraser">🧽 ممحاة</button>
+                <button class="btn" id="tool-line">📏 خط مستقيم</button>
+                <button class="btn" id="tool-rectangle">🟩 مستطيل</button>
+                <button class="btn" id="tool-circle">⭕ دائرة</button>
+            </div>
+        </div>
+
+        <!-- قسم حجم الفرشاة -->
+        <div class="section">
+            <h3>حجم الأداة (<span id="size-val">5</span>px)</h3>
+            <div class="range-picker">
+                <input type="range" id="brush-size" min="1" max="50" value="5">
+            </div>
+        </div>
+
+        <!-- قسم الألوان الجاهزة -->
+        <div class="section">
+            <h3>الألوان</h3>
+            <div class="color-palette">
+                <div class="color-circle selected" style="background-color: #000000;" data-color="#000000"></div>
+                <div class="color-circle" style="background-color: #ff0000;" data-color="#ff0000"></div>
+                <div class="color-circle" style="background-color: #00ff00;" data-color="#00ff00"></div>
+                <div class="color-circle" style="background-color: #0000ff;" data-color="#0000ff"></div>
+                <div class="color-circle" style="background-color: #ffff00;" data-color="#ffff00"></div>
+                <div class="color-circle" style="background-color: #ff00ff;" data-color="#ff00ff"></div>
+                <div class="color-circle" style="background-color: #00ffff;" data-color="#00ffff"></div>
+                <div class="color-circle" style="background-color: #ff9900;" data-color="#ff9900"></div>
+                <div class="color-circle" style="background-color: #7f8c8d;" data-color="#7f8c8d"></div>
+                <div class="color-circle" style="background-color: #8e44ad;" data-color="#8e44ad"></div>
+            </div>
+            <label style="font-size: 13px; margin-top: 5px; color: #555;">لون مخصص:</label>
+            <input type="color" id="customColor" value="#000000">
+        </div>
+
+        <!-- خيارات إضافية -->
+        <div class="section">
+            <label><input type="checkbox" id="fill-shape"> تعبئة الأشكال هندسية</label>
+        </div>
+
+        <hr style="border: 0; border-top: 1px solid #eee;">
+
+        <!-- قسم العمليات (تراجع، مسح، حفظ) -->
+        <div class="section">
+            <h3>التحكم والملفات</h3>
+            <div class="actions-grid">
+                <button class="btn" id="btn-undo">↩️ تراجع</button>
+                <button class="btn" id="btn-redo">↪️ إعادة</button>
+            </div>
+            <button class="btn btn-danger" id="btn-clear">🗑️ مسح اللوحة</button>
+            <button class="btn btn-success" id="btn-save">💾 حفظ الصورة</button>
+        </div>
+    </div>
+
+    <!-- منطقة لوحة الرسم -->
+    <div class="canvas-container">
+        <canvas id="paintCanvas"></canvas>
+    </div>
+
+    <!-- كود الجافا سكريبت للتشغيل الميكانيكي للتطبيق -->
+    <script>
+        const canvas = document.getElementById('paintCanvas');
+        const ctx = canvas.getContext('2d');
+        
+        // عناصر واجهة المستخدم
+        const brushSizeInput = document.getElementById('brush-size');
+        const sizeVal = document.getElementById('size-val');
+        const colorCircles = document.querySelectorAll('.color-circle');
+        const customColorInput = document.getElementById('customColor');
+        const fillShapeCheck = document.getElementById('fill-shape');
+        
+        const toolBrush = document.getElementById('tool-brush');
+        const toolEraser = document.getElementById('tool-eraser');
+        const toolLine = document.getElementById('tool-line');
+        const toolRect = document.getElementById('tool-rectangle');
+        const toolCircle = document.getElementById('tool-circle');
+        
+        const btnUndo = document.getElementById('btn-undo');
+        const btnRedo = document.getElementById('btn-redo');
+        const btnClear = document.getElementById('btn-clear');
+        const btnSave = document.getElementById('btn-save');
+
+        // إعدادات التطبيق الافتراضية
+        let isDrawing = false;
+        let currentTool = 'brush'; // brush, eraser, line, rectangle, circle
+        let currentColor = '#000000';
+        let currentSize = 5;
+        let startX, startY; // لتخزين نقاط البداية عند رسم الأشكال
+        
+        // مصفوفات للتراجع والإعادة (Undo / Redo)
+        let undoStack = [];
+        let redoStack = [];
+
+        // ضبط حجم لوحة الرسم لتناسب الشاشة
+        function resizeCanvas() {
+            canvas.width = canvas.parentElement.clientWidth - 40;
+            canvas.height = canvas.parentElement.clientHeight - 40;
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            saveState(); // حفظ الحالة البيضاء الأولى
+        }
+
+        window.addEventListener('load', resizeCanvas);
+
+        // حفظ حالة اللوحة الحالية للتراجع
+        function saveState() {
+            if (undoStack.length > 20) undoStack.shift(); // تحديد الحد الأقصى بـ 20 خطوة
+            undoStack.push(canvas.toDataURL());
+            redoStack = []; // تفريغ مصفوفة الإعادة عند رسم شيء جديد
+        }
+
+        // التعامل مع اختيار الأدوات
+        const tools = [toolBrush, toolEraser, toolLine, toolRect, toolCircle];
+        tools.forEach(tool => {
+            tool.addEventListener('click', (e) => {
+                tools.forEach(t => t.classList.remove('active'));
+                tool.classList.add('active');
+                currentTool = tool.id.replace('tool-', '');
+            });
+        });
+
+        // تغيير الحجم
+        brushSizeInput.addEventListener('input', (e) => {
+            currentSize = e.target.value;
+            sizeVal.textContent = currentSize;
+        });
+
+        // اختيار الألوان الجاهزة
+        colorCircles.forEach(circle => {
+            circle.addEventListener('click', () => {
+                colorCircles.forEach(c => c.classList.remove('selected'));
+                circle.classList.add('selected');
+                currentColor = circle.dataset.color;
+                customColorInput.value = currentColor;
+            });
+        });
+
+        // اختيار لون مخصص
+        customColorInput.addEventListener('input', (e) => {
+            currentColor = e.target.value;
+            colorCircles.forEach(c => c.classList.remove('selected'));
+        });
+
+        // --- منطق الرسم ---
+
+        // دالة للمساعدة في إعادة رسم الحالة الأخيرة قبل استكمال رسم الشكل (لمنع تكرار الشكل أثناء السحب)
+        let snapshot;
+
+        canvas.addEventListener('mousedown', (e) => {
+            isDrawing = true;
+            startX = e.offsetX;
+            startY = e.offsetY;
+            
+            ctx.beginPath();
+            
+            // إعدادات الفرشاة بناءً على الأداة الحالية
+            ctx.lineWidth = currentSize;
+            if (currentTool === 'eraser') {
+                ctx.strokeStyle = '#ffffff'; // الممسحة ترسم باللون الأبيض
+            } else {
+                ctx.strokeStyle = currentColor;
+                ctx.fillStyle = currentColor;
+            }
+
+            if (currentTool === 'brush') {
+                ctx.moveTo(startX, startY);
+                ctx.lineTo(startX, startY);
+                ctx.stroke();
+            }
+
+            // أخذ لقطة من اللوحة الحالية لرسم الأشكال الهندسية بسلاسة
+            snapshot = ctx.getImageData(0, 0, canvas.width, canvas.height);
+        });
+
+        canvas.addEventListener('mousemove', (e) => {
+            if (!isDrawing) return;
+
+            // إذا كنا نرسم أشكالاً، يجب تنظيف اللوحة وإعادتها للقطة السابقة أثناء تحريك الفأرة
+            if (currentTool !== 'brush' && currentTool !== 'eraser') {
+                ctx.putImageData(snapshot, 0, 0);
+            }
+
+            if (currentTool === 'brush' || currentTool === 'eraser') {
+                ctx.lineTo(e.offsetX, e.offsetY);
+                ctx.stroke();
+            } else if (currentTool === 'line') {
+                ctx.beginPath();
+                ctx.moveTo(startX, startY);
+                ctx.lineTo(e.offsetX, e.offsetY);
+                ctx.stroke();
+            } else if (currentTool === 'rectangle') {
+                ctx.beginPath();
+                if(fillShapeCheck.checked) {
+                    ctx.fillRect(startX, startY, e.offsetX - startX, e.offsetY - startY);
+                } else {
+                    ctx.strokeRect(startX, startY, e.offsetX - startX, e.offsetY - startY);
+                }
+            } else if (currentTool === 'circle') {
+                ctx.beginPath();
+                let radius = Math.sqrt(Math.pow((startX - e.offsetX), 2) + Math.pow((startY - e.offsetY), 2));
+                ctx.arc(startX, startY, radius, 0, 2 * Math.PI);
+                fillShapeCheck.checked ? ctx.fill() : ctx.stroke();
+            }
+        });
+
+        canvas.addEventListener('mouseup', () => {
+            if (isDrawing) {
+                isDrawing = false;
+                saveState(); // حفظ الحالة بعد الانتهاء من الرسمة الحالية
+            }
+        });
+
+        canvas.addEventListener('mouseleave', () => {
+            if (isDrawing) {
+                isDrawing = false;
+                saveState();
+            }
+        });
+
+        // --- أزرار التحكم (التراجع، الإعادة، المسح، الحفظ) ---
+
+        // التراجع
+        btnUndo.addEventListener('click', () => {
+            if (undoStack.length > 1) { // نترك دائماً الحالة الأولى (البيضاء)
+                redoStack.push(undoStack.pop()); // انقل الحالة الحالية للإعادة
+                let previousStateURL = undoStack[undoStack.length - 1];
+                let img = new Image();
+                img.src = previousStateURL;
+                img.onload = () => {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0);
+                }
+            }
+        });
+
+        // الإعادة
+        btnRedo.addEventListener('click', () => {
+            if (redoStack.length > 0) {
+                let nextStateURL = redoStack.pop();
+                undoStack.push(nextStateURL);
+                let img = new Image();
+                img.src = nextStateURL;
+                img.onload = () => {
+                    ctx.clearRect(0, 0, canvas.width, canvas.height);
+                    ctx.drawImage(img, 0, 0);
+                }
+            }
+        });
+
+        // مسح اللوحة بالكامل
+        btnClear.addEventListener('click', () => {
+            if(confirm("هل أنت متأكد أنك تريد مسح اللوحة بالكامل؟")) {
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                saveState();
+            }
+        });
+
+        // حفظ وتنزيل الصورة
+        btnSave.addEventListener('click', () => {
+            // كود لإنشاء رابط مؤقت لتحميل الصورة بصيغة PNG
+            const link = document.createElement('a');
+            link.download = `my-drawing-${Date.now()}.png`;
+            link.href = canvas.toDataURL();
+            link.click();
+        });
+    </script>
+</body>
+</html>
