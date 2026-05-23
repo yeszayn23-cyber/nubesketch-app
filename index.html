@@ -2,608 +2,375 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>إستوديو الرسم الرقمي الاحترافي</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>إستوديو الرسم الاحترافي - النُسخة الكاملة</title>
     <style>
-        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; user-select: none; -webkit-user-select: none; }
-        body { background: #121216; color: #ffffff; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        :root {
+            --bg-dark: #1e1e1e;
+            --bg-panel: #252526;
+            --bg-tool: #333333;
+            --accent: #007acc;
+            --text-light: #cccccc;
+            --text-white: #ffffff;
+            --border: #3e3e42;
+        }
+
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; user-select: none; }
+        
+        body { background-color: var(--bg-dark); color: var(--text-light); display: flex; height: 100vh; overflow: hidden; font-size: 12px; }
+
+        /* شريط الأدوات الأيسر (كما في الصورة 4) */
+        .left-toolbar { width: 50px; background-color: var(--bg-panel); border-left: 1px solid var(--border); display: flex; flex-direction: column; align-items: center; padding: 10px 0; gap: 8px; z-index: 10; overflow-y: auto; }
+        .tool-btn { width: 36px; height: 36px; border-radius: 6px; background: transparent; border: 1px solid transparent; color: var(--text-light); cursor: pointer; display: flex; flex-direction: column; justify-content: center; align-items: center; font-size: 10px; gap: 2px; }
+        .tool-btn:hover { background-color: var(--bg-tool); }
+        .tool-btn.active { background-color: var(--bg-tool); border-color: var(--accent); color: var(--text-white); }
+        .tool-btn svg { width: 18px; height: 18px; fill: currentColor; }
+
+        /* منطقة العمل المركزية */
+        .workspace { flex: 1; display: flex; flex-direction: column; position: relative; background-color: #121212; }
         
         /* شريط التحكم العلوي */
-        .top-bar { height: 50px; background: #0a0a0d; display: flex; justify-content: space-between; align-items: center; padding: 0 16px; border-bottom: 1px solid #22222b; z-index: 100; }
-        .brand { font-weight: bold; font-size: 14px; color: #e5e5e5; }
-        .brand span { color: #38bdf8; }
-        .top-actions { display: flex; gap: 8px; }
+        .top-bar { height: 40px; background-color: var(--bg-panel); border-bottom: 1px solid var(--border); display: flex; justify-content: space-between; align-items: center; padding: 0 15px; }
+        .canvas-wrapper { flex: 1; display: flex; justify-content: center; align-items: center; overflow: hidden; position: relative; }
+        canvas { background-color: #f5f5dc; box-shadow: 0 0 20px rgba(0,0,0,0.5); cursor: crosshair; }
 
-        /* منطقة العمل الكبرى وحاضنة الكانفاس الدوارة */
-        .workspace { flex: 1; position: relative; background: #232329; overflow: hidden; display: flex; justify-content: center; align-items: center; touch-action: none; }
-        .canvas-transform-viewport { position: absolute; transform-origin: center center; display: flex; justify-content: center; align-items: center; pointer-events: none; }
-        .canvas-container { position: relative; background: #ffffff; box-shadow: 0 12px 45px rgba(0,0,0,0.6); pointer-events: auto; }
-        .canvas-container canvas { position: absolute; top: 0; left: 0; display: block; width: 100%; height: 100%; }
-
-        /* شريط التحكم السفلي */
-        .bottom-bar { height: 65px; background: #0a0a0d; border-top: 1px solid #22222b; display: flex; justify-content: space-around; align-items: center; z-index: 110; padding-bottom: env(safe-area-inset-bottom); }
-        .bottom-btn { background: none; border: none; color: #8f8fbc; width: 60px; height: 50px; display: flex; flex-direction: column; align-items: center; justify-content: center; font-size: 11px; gap: 4px; cursor: pointer; }
-        .bottom-btn.active { color: #38bdf8; }
-        .bottom-btn svg { width: 22px; height: 22px; fill: currentColor; }
-
-        /* قائمة الأدوات الجانبية */
-        .tools-popup-panel { position: absolute; bottom: 75px; left: 16px; background: rgba(15, 15, 20, 0.96); backdrop-filter: blur(12px); border: 1px solid #3a3a4a; border-radius: 14px; width: 140px; display: none; flex-direction: column; padding: 6px; z-index: 150; box-shadow: 0 8px 32px rgba(0,0,0,0.5); }
-        .tools-popup-panel.show { display: flex; }
-        .tool-row { display: flex; align-items: center; gap: 12px; width: 100%; padding: 10px 12px; background: none; border: none; color: #ffffff; text-align: right; font-size: 13px; border-radius: 8px; cursor: pointer; }
-        .tool-row.active, .tool-row:hover { background: #22222b; color: #38bdf8; }
-        .tool-row svg { width: 18px; height: 18px; fill: currentColor; }
-
-        /* 🖌️ نافذة مكتبة الفرش الاحترافية مع الأشكال البصرية الحية */
-        .brushes-popup-panel { position: absolute; bottom: 75px; right: 16px; left: 16px; max-width: 440px; background: rgba(15, 15, 20, 0.98); backdrop-filter: blur(15px); border: 1px solid #3a3a4a; border-radius: 16px; display: none; flex-direction: column; height: 400px; z-index: 160; box-shadow: 0 12px 40px rgba(0,0,0,0.6); overflow: hidden; }
-        .brushes-popup-panel.show { display: flex; }
-        .brushes-header { padding: 12px; background: #0a0a0d; font-size: 13px; font-weight: bold; text-align: center; border-bottom: 1px solid #22222b; }
-        .brushes-tabs { display: flex; background: #121216; border-bottom: 1px solid #22222b; }
-        .tab-btn { flex: 1; padding: 10px 4px; background: none; border: none; color: #7e7e96; font-size: 12px; cursor: pointer; text-align: center; }
-        .tab-btn.active { color: #38bdf8; border-bottom: 2px solid #38bdf8; font-weight: bold; }
-        .brushes-list { flex: 1; overflow-y: auto; padding: 8px; display: flex; flex-direction: column; gap: 6px; }
+        /* اللوحة اليمنى (الفرش، الطبقات، الألوان) */
+        .right-panel { width: 300px; background-color: var(--bg-panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
         
-        /* تصميم صف الفرشاة مع أيقونة الشكل الفعلي أمامه */
-        .brush-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 12px; background: rgba(255,255,255,0.02); border: 1px solid transparent; border-radius: 10px; cursor: pointer; }
-        .brush-item:hover, .brush-item.active { background: rgba(56, 189, 248, 0.12); border-color: #38bdf8; }
-        .brush-info { display: flex; flex-direction: column; text-align: right; }
-        .brush-name { font-size: 13px; font-weight: bold; color: #ffffff; }
-        /* معاينة شكل الفرشاة بخط اليد */
-        .brush-preview-stroke { width: 90px; height: 32px; background: #1a1a24; border-radius: 6px; border: 1px solid #2d2d3a; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-        .brush-preview-stroke canvas { width: 100%; height: 100%; display: block; }
+        /* تبويبات اللوحة اليمنى */
+        .panel-tabs { display: flex; border-bottom: 1px solid var(--border); }
+        .panel-tab { flex: 1; padding: 10px; text-align: center; background: var(--bg-dark); border: none; color: var(--text-light); cursor: pointer; border-bottom: 2px solid transparent; }
+        .panel-tab.active { background: var(--bg-panel); color: var(--text-white); border-bottom-color: var(--accent); }
 
-        /* عجلة الألوان الدائرية والمربع الماسي الداخلي */
-        .color-panel { position: absolute; bottom: 75px; left: 50%; transform: translateX(-50%); background: #0a0a0d; border: 1px solid #22222b; border-radius: 16px; padding: 16px; width: 280px; display: none; flex-direction: column; align-items: center; gap: 12px; z-index: 140; box-shadow: 0 12px 36px rgba(0,0,0,0.6); }
-        .color-panel.show { display: flex; }
-        .wheel-container { position: relative; width: 200px; height: 200px; touch-action: none; }
-        #hueCanvas { position: absolute; top: 0; left: 0; border-radius: 50%; z-index: 1; }
-        #slCanvas { position: absolute; top: 35px; left: 35px; z-index: 2; }
-        .wheel-picker { position: absolute; width: 12px; height: 12px; border: 2px solid #ffffff; border-radius: 50%; box-shadow: 0 0 4px rgba(0,0,0,0.8); pointer-events: none; z-index: 10; transform: translate(-50%, -50%); }
-        .color-preview-row { display: flex; width: 100%; align-items: center; gap: 12px; background: #121216; padding: 8px; border-radius: 8px; }
-        .color-box { width: 45px; height: 35px; border-radius: 6px; border: 1px solid #3a3a4a; }
-        .color-hex-text { font-family: monospace; font-size: 14px; color: #38bdf8; }
+        .panel-content { flex: 1; overflow-y: auto; display: none; padding: 10px; }
+        .panel-content.active { display: flex; flex-direction: column; gap: 15px; }
 
-        /* المنزلقات السفلية العائمة */
-        .sliders-overlay { position: absolute; bottom: 12px; right: 16px; left: 16px; display: flex; flex-direction: column; gap: 6px; z-index: 95; background: rgba(10, 10, 13, 0.88); padding: 8px 12px; border-radius: 12px; backdrop-filter: blur(6px); border: 1px solid #22222b; }
-        .slider-item { display: flex; align-items: center; gap: 10px; width: 100%; }
-        .slider-item span { font-size: 11px; color: #8f8fbc; font-weight: bold; width: 40px; }
-        .slider-item input { flex: 1; accent-color: #38bdf8; height: 4px; }
+        /* منتقي الألوان (كما في الصورة 2) */
+        .color-picker-ui { display: flex; flex-direction: column; gap: 10px; align-items: center; }
+        .color-wheel-box { position: relative; width: 200px; height: 200px; border-radius: 50%; background: conic-gradient(red, yellow, lime, aqua, blue, magenta, red); display: flex; justify-content: center; align-items: center; }
+        .color-diamond { width: 100px; height: 100px; background: linear-gradient(to bottom, transparent, black), linear-gradient(to right, white, red); transform: rotate(45deg); border: 1px solid #000; }
+        .color-preview { width: 100%; height: 30px; border-radius: 5px; background-color: #000; margin-top: 10px; border: 1px solid var(--border); }
+        .sliders-group { width: 100%; display: flex; flex-direction: column; gap: 8px; }
+        .slider-row { display: flex; align-items: center; gap: 10px; }
+        .slider-row label { width: 30px; font-weight: bold; }
+        .slider-row input[type="range"] { flex: 1; }
 
-        /* أزرار الإجراءات العلوية الهندسية الناصعة */
-        .icon-btn { background: #0a0a0d; border: 1px solid #22222b; color: #ffffff; width: 36px; height: 36px; border-radius: 8px; display: flex; align-items: center; justify-content: center; cursor: pointer; }
-        .icon-btn:disabled { opacity: 0.25; cursor: not-allowed; }
-        .icon-btn svg { width: 16px; height: 16px; fill: currentColor; }
+        /* قائمة الفرش (كما في الصور 5,6,7) */
+        .brush-category-title { font-weight: bold; color: var(--accent); margin-top: 10px; margin-bottom: 5px; border-bottom: 1px solid var(--border); padding-bottom: 3px; }
+        .brush-item { display: flex; align-items: center; gap: 10px; padding: 5px; border-radius: 5px; cursor: pointer; border: 1px solid transparent; background: var(--bg-dark); margin-bottom: 5px; }
+        .brush-item:hover { background: var(--bg-tool); }
+        .brush-item.active { border-color: var(--accent); background: rgba(0, 122, 204, 0.2); }
+        .brush-icon { width: 40px; height: 40px; background: #333; border-radius: 4px; display: flex; justify-content: center; align-items: center; overflow: hidden; }
+        .brush-icon canvas { width: 100%; height: 100%; background: transparent; box-shadow: none; }
+        .brush-details { display: flex; flex-direction: column; }
+        .brush-name { font-weight: bold; font-size: 11px; }
+
+        /* شريط التحكم السفلي (حجم وشفافية) */
+        .bottom-controls { height: 60px; background-color: var(--bg-panel); border-top: 1px solid var(--border); display: flex; align-items: center; padding: 0 20px; gap: 30px; }
+        .control-group { display: flex; align-items: center; gap: 10px; flex: 1; }
+        .control-group span { width: 50px; }
+        .control-group input[type="range"] { flex: 1; accent-color: var(--accent); }
+
+        /* لوحة الطبقات */
+        .layer-item { display: flex; align-items: center; gap: 10px; padding: 8px; background: var(--bg-dark); border: 1px solid var(--border); border-radius: 5px; margin-bottom: 5px; }
+        .layer-item.active { border-color: var(--accent); }
+        .layer-preview { width: 40px; height: 30px; background: #fff; border: 1px solid #000; }
     </style>
 </head>
 <body>
 
-    <div class="top-bar">
-        <div class="brand">إستوديو الفن <span>الواقعي</span></div>
-        <div class="top-actions">
-            <button class="icon-btn" id="undoBtn" title="تراجع"><svg viewBox="0 0 24 24"><path d="M12.5 8c-2.65 0-5.05.99-6.9 2.6L2 7v9h9l-3.62-3.62c1.39-1.16 3.16-1.88 5.12-1.88 3.54 0 6.55 2.31 7.6 5.5l2.37-.78C21.08 11.03 17.15 8 12.5 8z"/></svg></button>
-            <button class="icon-btn" id="redoBtn" title="إعادة"><svg viewBox="0 0 24 24"><path d="M18.4 10.6C16.55 8.99 14.15 8 11.5 8c-4.65 0-8.58 3.03-9.96 7.22L3.92 16c1.05-3.19 4.06-5.5 7.58-5.5 1.96 0 3.73.72 5.12 1.88L13 16h9V7l-3.6 3.6z"/></svg></button>
-            <button class="icon-btn" id="clearBtn" style="color: #ef4444;" title="مسح اللوحة"><svg viewBox="0 0 24 24"><path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/></svg></button>
-        </div>
+    <div class="left-toolbar">
+        <button class="tool-btn" title="Transform">✥</button>
+        <button class="tool-btn" title="Magic Wand">🪄</button>
+        <button class="tool-btn" title="Lasso">➰</button>
+        <hr style="width: 80%; border-color: var(--border);">
+        <button class="tool-btn active" id="toolBrush" title="Brush">🖌️</button>
+        <button class="tool-btn" id="toolEraser" title="Eraser">🧽</button>
+        <button class="tool-btn" id="toolSmudge" title="Smudge">👈</button>
+        <button class="tool-btn" id="toolBlur" title="Blur">💧</button>
+        <hr style="width: 80%; border-color: var(--border);">
+        <button class="tool-btn" title="Bucket">🪣</button>
+        <button class="tool-btn" title="Text">T</button>
+        <button class="tool-btn" id="toolPicker" title="Eyedropper">💉</button>
     </div>
 
-    <div class="workspace" id="workspace">
-        <div class="canvas-transform-viewport" id="transformViewport">
-            <div class="canvas-container" id="canvasContainer">
-                <canvas id="paintCanvas"></canvas>
+    <div class="workspace">
+        <div class="top-bar">
+            <div>الملف: لوحة فنية جديدة</div>
+            <div style="display: flex; gap: 10px;">
+                <button onclick="clearCanvas()" style="background:none; border:none; color:white; cursor:pointer;">مسح اللوحة 🗑️</button>
             </div>
         </div>
-
-        <div class="sliders-overlay">
-            <div class="slider-item">
+        <div class="canvas-wrapper">
+            <canvas id="mainCanvas" width="800" height="600"></canvas>
+        </div>
+        <div class="bottom-controls">
+            <div class="control-group">
                 <span>الحجم</span>
-                <input type="range" id="brushSize" min="2" max="100" value="16">
+                <input type="range" id="brushSize" min="1" max="100" value="15">
+                <span id="sizeVal">15.0</span>
             </div>
-            <div class="slider-item">
-                <span>العتامة</span>
+            <div class="control-group">
+                <span>الشفافية</span>
                 <input type="range" id="brushOpacity" min="1" max="100" value="100">
-            </div>
-        </div>
-
-        <div class="tools-popup-panel" id="toolsPopup">
-            <button class="tool-row active" data-tool="brush"><svg viewBox="0 0 24 24"><path d="M3 17.25V21h3.75L17.81 9.94l-3.75-3.75L3 17.25z"/></svg><span>فرشاة رسم</span></button>
-            <button class="tool-row" data-tool="eraser"><svg viewBox="0 0 24 24"><path d="M14.22 2.78l8.5 8.5c.78.78.78 2.05 0 2.83l-7.72 7.72c-.78.78-2.05.78-2.83 0l-8.5-8.5c-.78-.78-.78-2.05 0-2.83l7.72-7.72c.78-.78 2.05-.78 2.83 0z"/></svg><span>ممحاة</span></button>
-            <button class="tool-row" data-tool="bucket"><svg viewBox="0 0 24 24"><path d="M12 22c5.52 0 10-4.48 10-10S17.52 2 12 2 2 6.48 2 12s4.48 10 10 10z"/></svg><span>دلو التعبئة</span></button>
-            <button class="tool-row" data-tool="picker"><svg viewBox="0 0 24 24"><path d="M17.71 6.15l-1.86-1.86c-.39-.39-1.02-.39-1.41 0L11.58 7.15l1.86 1.86 2.86-2.86zm-7.57 3.14L3 16.42V21h4.58l7.13-7.13-4.57-4.58z"/></svg><span>منتقي الألوان</span></button>
-        </div>
-
-        <div class="brushes-popup-panel" id="brushesPopup">
-            <div class="brushes-header">مكتبة الفرش الفنية والواقعية</div>
-            <div class="brushes-tabs">
-                <button class="tab-btn active" data-cat="hair">شعر وفحم</button>
-                <button class="tab-btn" data-cat="water">ألوان مائية</button>
-                <button class="tab-btn" data-cat="fabric">قماش وغبار</button>
-                <button class="tab-btn" data-cat="basic">الأساسية</button>
-            </div>
-            <div class="brushes-list" id="brushesList">
-                </div>
-        </div>
-
-        <div class="color-panel" id="colorPanel">
-            <div class="wheel-container">
-                <canvas id="hueCanvas" width="200" height="200"></canvas>
-                <canvas id="slCanvas" width="130" height="130"></canvas>
-                <div class="wheel-picker" id="huePicker"></div>
-                <div class="wheel-picker" id="slPicker"></div>
-            </div>
-            <div class="color-preview-row">
-                <div class="color-box" id="colorBoxPreview"></div>
-                <div class="color-hex-text" id="colorHexText">#38BDF8</div>
+                <span id="opacityVal">100%</span>
             </div>
         </div>
     </div>
 
-    <div class="bottom-bar">
-        <button class="bottom-btn" id="toggleToolsBtn"><svg viewBox="0 0 24 24"><path d="M7 14c-1.66 0-3 1.34-3 3 0 1.31-1.16 2-2 2 .92.78 2.4 1 3 1 2.21 0 4-1.79 4-4 0-1.66-1.34-3-3-3z"/></svg><span>الأدوات</span></button>
-        <button class="bottom-btn" id="toggleBrushesBtn"><svg viewBox="0 0 24 24"><path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L4.35 19.4c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l1.9-1.9C9.22 19.58 10.57 20 12 20c4.97 0 9-4.03 9-9s-4.03-9-9-9zm0 15c-3.31 0-6-2.69-6-6s2.69-6 6-6 6 2.69 6 6-2.69 6-6 6z"/></svg><span>الفرش</span></button>
-        <button class="bottom-btn" id="toggleColorBtn"><svg viewBox="0 0 24 24"><path d="M12 2C6.49 2 2 6.49 2 12s4.49 10 10 10 10-4.49 10-10S17.51 2 12 2z"/></svg><span>الألوان</span></button>
+    <div class="right-panel">
+        <div class="panel-tabs">
+            <button class="panel-tab active" onclick="switchTab('brushesTab')">الفرش</button>
+            <button class="panel-tab" onclick="switchTab('colorsTab')">الألوان</button>
+            <button class="panel-tab" onclick="switchTab('layersTab')">الطبقات</button>
+        </div>
+
+        <div id="brushesTab" class="panel-content active">
+            
+            <div class="brush-category-title">الأساسية (Basic)</div>
+            <div class="brush-item active" onclick="selectBrush('basic_solid', this)">
+                <div class="brush-icon">✒️</div>
+                <div class="brush-details"><span class="brush-name">قلم صلب (Basic-1)</span></div>
+            </div>
+
+            <div class="brush-category-title">الشعر والفحم (Chalk/Hair)</div>
+            <div class="brush-item" onclick="selectBrush('real_hair', this)">
+                <div class="brush-icon">💇</div>
+                <div class="brush-details"><span class="brush-name">شعر حقيقي (Hair)</span></div>
+            </div>
+            <div class="brush-item" onclick="selectBrush('chalk_grainy', this)">
+                <div class="brush-icon">🖍️</div>
+                <div class="brush-details"><span class="brush-name">طباشير خشن (Chalk Grainy)</span></div>
+            </div>
+            <div class="brush-item" onclick="selectBrush('charcoal', this)">
+                <div class="brush-icon">✏️</div>
+                <div class="brush-details"><span class="brush-name">فحم حاد (Charcoal)</span></div>
+            </div>
+
+            <div class="brush-category-title">مائي ورطب (Wet/Water)</div>
+            <div class="brush-item" onclick="selectBrush('watercolor_fringe', this)">
+                <div class="brush-icon">💧</div>
+                <div class="brush-details"><span class="brush-name">ألوان مائية بحواف (Fringe)</span></div>
+            </div>
+            <div class="brush-item" onclick="selectBrush('wet_smudge', this)">
+                <div class="brush-icon">🌊</div>
+                <div class="brush-details"><span class="brush-name">دمج رطب (Wet Smear)</span></div>
+            </div>
+        </div>
+
+        <div id="colorsTab" class="panel-content">
+            <div class="color-picker-ui">
+                <div class="color-wheel-box">
+                    <div class="color-diamond"></div>
+                </div>
+                <div class="color-preview" id="currentColorPreview"></div>
+                
+                <div class="sliders-group">
+                    <div class="slider-row">
+                        <label style="color: red;">R</label>
+                        <input type="range" id="rSlider" min="0" max="255" value="0">
+                    </div>
+                    <div class="slider-row">
+                        <label style="color: lime;">G</label>
+                        <input type="range" id="gSlider" min="0" max="255" value="0">
+                    </div>
+                    <div class="slider-row">
+                        <label style="color: #007acc;">B</label>
+                        <input type="range" id="bSlider" min="0" max="255" value="0">
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div id="layersTab" class="panel-content">
+            <button style="padding: 5px; background: var(--bg-tool); color: white; border: none; cursor: pointer; border-radius: 3px;">+ إضافة طبقة</button>
+            <div class="layer-item active">
+                <div class="layer-preview"></div>
+                <span>الطبقة 1 (الرئيسية)</span>
+                <span style="margin-right: auto;">👁️</span>
+            </div>
+            <div class="layer-item">
+                <div class="layer-preview" style="background: transparent;"></div>
+                <span>الخلفية</span>
+                <span style="margin-right: auto;">🔒</span>
+            </div>
+        </div>
     </div>
 
     <script>
-        const workspace = document.getElementById('workspace');
-        const transformViewport = document.getElementById('transformViewport');
-        const canvasContainer = document.getElementById('canvasContainer');
-        const canvas = document.getElementById('paintCanvas');
+        // إعدادات الكانفاس
+        const canvas = document.getElementById('mainCanvas');
         const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        let isDrawing = false;
+        let lastX = 0; let lastY = 0;
 
-        const targetWidth = 900;
-        const targetHeight = 900;
-        const dpr = window.devicePixelRatio || 2;
+        // إعدادات الفرشاة الحالية
+        let currentBrush = 'basic_solid';
+        let currentColor = { r: 0, g: 0, b: 0 };
+        let brushSize = 15;
+        let brushOpacity = 1.0;
 
-        canvasContainer.style.width = targetWidth + 'px';
-        canvasContainer.style.height = targetHeight + 'px';
-        canvas.width = targetWidth * dpr;
-        canvas.height = targetHeight * dpr;
-        ctx.scale(dpr, dpr);
-
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, targetWidth, targetHeight);
-
-        // متغيرات التحكم باللمس المتعدد بالإصبعين (Pan, Zoom, Rotate)
-        let viewScale = 0.85;
-        let viewRotation = 0;
-        let viewPosX = 0;
-        let viewPosY = 0;
-
-        let activeTool = 'brush';
-        let isPainting = false;
-        let points = [];
-        let selectedColor = '#38bdf8';
-        let currentSelectedBrushId = 'real_hair';
-
-        let undoStack = [];
-        let redoStack = [];
-
-        // 📋 قاعدة بيانات الفرش الحقيقية ذات الرندرة الفائقة والمؤثرات الواقعية
-        const brushesDatabase = {
-            hair: [
-                { id: 'real_hair', name: 'Hair Brush (شعر حقيقي)' },
-                { id: 'charcoal_t', name: 'Charcoal Pencil (فحم حاد)' },
-                { id: 'pencil_hd', name: 'Sketch Pencil (قلم رصاص)' }
-            ],
-            water: [
-                { id: 'wfringe', name: 'Watercolor Fringe (حواف مبللة)' },
-                { id: 'wsoft', name: 'Waterpaint Soft (مائي ناعم)' }
-            ],
-            fabric: [
-                { id: 'fabric_mesh', name: 'Fabric Brush (نسيج قماش)' },
-                { id: 'dust_brush', name: 'Dust Smoke (غبار ودخان)' }
-            ],
-            basic: [
-                { id: 'airbrush', name: 'Airbrush Smooth (بخاخ ناعم)' },
-                { id: 'basic_solid', name: 'Pen Solid (قلم صلب حاد)' }
-            ]
-        };
-
-        function saveCanvasState() {
-            if (undoStack.length >= 25) undoStack.shift();
-            undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
-            redoStack = [];
-            updateUndoRedoButtons();
-        }
-
-        function updateUndoRedoButtons() {
-            document.getElementById('undoBtn').disabled = undoStack.length === 0;
-            document.getElementById('redoBtn').disabled = redoStack.length === 0;
-        }
-
-        document.getElementById('undoBtn').addEventListener('click', () => {
-            if (undoStack.length > 0) {
-                redoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
-                ctx.putImageData(undoStack.pop(), 0, 0);
-                updateUndoRedoButtons();
-            }
+        // تحديث قيم المنزلقات السفلية
+        document.getElementById('brushSize').addEventListener('input', function() {
+            brushSize = this.value;
+            document.getElementById('sizeVal').innerText = this.value + '.0';
+        });
+        document.getElementById('brushOpacity').addEventListener('input', function() {
+            brushOpacity = this.value / 100;
+            document.getElementById('opacityVal').innerText = this.value + '%';
         });
 
-        document.getElementById('redoBtn').addEventListener('click', () => {
-            if (redoStack.length > 0) {
-                undoStack.push(ctx.getImageData(0, 0, canvas.width, canvas.height));
-                ctx.putImageData(redoStack.pop(), 0, 0);
-                updateUndoRedoButtons();
-            }
-        });
-
-        document.getElementById('clearBtn').addEventListener('click', () => {
-            saveCanvasState();
-            ctx.fillStyle = '#ffffff';
-            ctx.fillRect(0, 0, targetWidth, targetHeight);
-        });
-
-        function applyViewportTransform() {
-            transformViewport.style.transform = `translate(${viewPosX}px, ${viewPosY}px) scale(${viewScale}) rotate(${viewRotation}deg)`;
+        // تحديث الألوان من منزلقات RGB
+        function updateColorFromSliders() {
+            currentColor.r = document.getElementById('rSlider').value;
+            currentColor.g = document.getElementById('gSlider').value;
+            currentColor.b = document.getElementById('bSlider').value;
+            document.getElementById('currentColorPreview').style.backgroundColor = `rgb(${currentColor.r}, ${currentColor.g}, ${currentColor.b})`;
         }
-        applyViewportTransform();
+        document.getElementById('rSlider').addEventListener('input', updateColorFromSliders);
+        document.getElementById('gSlider').addEventListener('input', updateColorFromSliders);
+        document.getElementById('bSlider').addEventListener('input', updateColorFromSliders);
 
-        // 📱 إيماءات اللمس المتعدد الكاملة لتدوير وتقريب الكانفاس بمرونة دائرية تامة بالإصبعين
-        let touchStartDist = 0;
-        let touchStartAngle = 0;
-        let touchStartScale = 1;
-        let touchStartRotation = 0;
-        let isMultiTouch = false;
+        // التبديل بين التبويبات (فرش، ألوان، طبقات)
+        function switchTab(tabId) {
+            document.querySelectorAll('.panel-tab').forEach(t => t.classList.remove('active'));
+            document.querySelectorAll('.panel-content').forEach(c => c.classList.remove('active'));
+            event.target.classList.add('active');
+            document.getElementById(tabId).classList.add('active');
+        }
 
-        workspace.addEventListener('touchstart', (e) => {
-            if (e.touches.length === 2) {
-                isMultiTouch = true;
-                isPainting = false;
-                points = [];
-                const t1 = e.touches[0];
-                const t2 = e.touches[1];
-                touchStartDist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
-                touchStartAngle = Math.atan2(t2.clientY - t1.clientY, t2.clientX - t1.clientX) * 180 / Math.PI;
-                touchStartScale = viewScale;
-                touchStartRotation = viewRotation;
-            } else if (e.touches.length === 1 && !isMultiTouch) {
-                handlePaintStart(e.touches[0].clientX, e.touches[0].clientY);
-            }
-        }, { passive: false });
+        // اختيار الفرشاة
+        function selectBrush(brushId, element) {
+            currentBrush = brushId;
+            document.querySelectorAll('.brush-item').forEach(el => el.classList.remove('active'));
+            element.classList.add('active');
+        }
 
-        workspace.addEventListener('touchmove', (e) => {
-            if (e.touches.length === 2 && isMultiTouch) {
-                e.preventDefault();
-                const t1 = e.touches[0];
-                const t2 = e.touches[1];
-                const currentDist = Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
-                viewScale = Math.max(0.2, Math.min(6.0, touchStartScale * (currentDist / touchStartDist)));
-                const currentAngle = Math.atan2(t2.clientY - t1.clientY, t2.clientX - t1.clientX) * 180 / Math.PI;
-                viewRotation = touchStartRotation + (currentAngle - touchStartAngle);
-                applyViewportTransform();
-            } else if (e.touches.length === 1 && !isMultiTouch && isPainting) {
-                e.preventDefault();
-                handlePaintMove(e.touches[0].clientX, e.touches[0].clientY);
-            }
-        }, { passive: false });
+        function clearCanvas() {
+            ctx.fillStyle = '#f5f5dc';
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+        }
+        clearCanvas(); // تعبئة مبدئية
 
-        workspace.addEventListener('touchend', () => { isMultiTouch = false; if (isPainting) handlePaintEnd(); });
+        // أحداث الرسم الماوس/اللمس
+        function startPosition(e) {
+            isDrawing = true;
+            const pos = getMousePos(canvas, e);
+            lastX = pos.x; lastY = pos.y;
+            draw(e);
+        }
 
-        // التوافق التام مع الماوس وأجهزة الكمبيوتر
-        workspace.addEventListener('mousedown', (e) => { if (e.button === 0) handlePaintStart(e.clientX, e.clientY); });
-        workspace.addEventListener('mousemove', (e) => { if (isPainting) handlePaintMove(e.clientX, e.clientY); });
-        workspace.addEventListener('mouseup', () => { if (isPainting) handlePaintEnd(); });
+        function endPosition() {
+            isDrawing = false;
+            ctx.beginPath();
+        }
 
-        function getCanvasSpaceCoordinates(clientX, clientY) {
+        function getMousePos(canvas, evt) {
             const rect = canvas.getBoundingClientRect();
-            const centerX = rect.left + rect.width / 2;
-            const centerY = rect.top + rect.height / 2;
-            let relX = clientX - centerX; let relY = clientY - centerY;
-            const rad = (-viewRotation * Math.PI) / 180;
-            const rotX = relX * Math.cos(rad) - relY * Math.sin(rad);
-            const rotY = relX * Math.sin(rad) + relY * Math.cos(rad);
-            return { x: rotX / (rect.width / targetWidth) + targetWidth / 2, y: rotY / (rect.height / targetHeight) + targetHeight / 2 };
+            const clientX = evt.touches ? evt.touches[0].clientX : evt.clientX;
+            const clientY = evt.touches ? evt.touches[0].clientY : evt.clientY;
+            return {
+                x: (clientX - rect.left) * (canvas.width / rect.width),
+                y: (clientY - rect.top) * (canvas.height / rect.height)
+            };
         }
 
-        function handlePaintStart(clientX, clientY) {
-            const pos = getCanvasSpaceCoordinates(clientX, clientY);
-            if (activeTool === 'picker') { pickColorAtPoint(pos.x, pos.y); return; }
-            if (activeTool === 'bucket') { saveCanvasState(); executeFloodFill(Math.floor(pos.x), Math.floor(pos.y), selectedColor); return; }
-            isPainting = true;
-            saveCanvasState();
-            points = [pos];
-        }
+        function draw(e) {
+            if (!isDrawing) return;
+            e.preventDefault();
+            const pos = getMousePos(canvas, e);
+            
+            ctx.lineCap = 'round';
+            ctx.lineJoin = 'round';
+            const rgbaColor = `rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, ${brushOpacity})`;
 
-        function handlePaintMove(clientX, clientY) {
-            if (!isPainting) return;
-            const pos = getCanvasSpaceCoordinates(clientX, clientY);
-            points.push(pos);
-
-            if (points.length > 1) {
-                const p1 = points[points.length - 2];
-                const p2 = points[points.length - 1];
-                const size = parseFloat(document.getElementById('brushSize').value);
-                const opacity = parseFloat(document.getElementById('brushOpacity').value) / 100;
-
-                ctx.save();
-                if (activeTool === 'eraser') {
-                    ctx.globalCompositeOperation = 'destination-out';
-                    drawStandardStroke(p1, p2, size, opacity, '#000000');
-                } else {
+            // 🚀 محرك الفرش المتقدم حسب طلبك (تجسيد واقعي)
+            switch(currentBrush) {
+                case 'basic_solid': // قلم عادي حاد
                     ctx.globalCompositeOperation = 'source-over';
-                    // 🚀 تشغيل خوارزمية الرندرة الحقيقية للفرشاة المحددة
-                    renderAdvancedRealBrushes(ctx, p1, p2, size, opacity, selectedColor, currentSelectedBrushId);
-                }
-                ctx.restore();
-            }
-        }
+                    ctx.strokeStyle = rgbaColor;
+                    ctx.lineWidth = brushSize;
+                    ctx.beginPath();
+                    ctx.moveTo(lastX, lastY);
+                    ctx.lineTo(pos.x, pos.y);
+                    ctx.stroke();
+                    break;
 
-        function handlePaintEnd() { isPainting = false; points = []; }
-
-        // 🔥 خوارزمية محاكاة الأشكال والمقاييس الفنية الواقعية (شعر حقيقي، نسيج، غبار...)
-        function renderAdvancedRealBrushes(targetCtx, p1, p2, size, opacity, color, brushId) {
-            const dist = Math.hypot(p2.x - p1.x, p2.y - p1.y);
-            const steps = Math.max(1, Math.floor(dist / 1.5));
-
-            switch (brushId) {
-                case 'real_hair': // 💇 خوارزمية رسم خصلات شعر انسيابية حقيقية متوازية بدقة فائقة
-                    targetCtx.lineCap = 'round';
-                    const hairCount = 9; 
-                    for (let h = 0; h < hairCount; h++) {
-                        // توزيع سماكة الخصلات والشعيرات الفردية
-                        targetCtx.strokeStyle = convertHexToRgbA(color, opacity * (0.3 + Math.random() * 0.4));
-                        targetCtx.lineWidth = Math.max(0.6, size * 0.08);
-                        const offset = (h - (hairCount - 1) / 2) * (size * 0.15);
-                        
-                        targetCtx.beginPath();
-                        targetCtx.moveTo(p1.x + offset + (Math.random() - 0.5) * 2, p1.y + offset);
-                        targetCtx.lineTo(p2.x + offset, p2.y + offset);
-                        targetCtx.stroke();
+                case 'real_hair': // شعر حقيقي (خطوط متوازية متفاوتة)
+                    ctx.globalCompositeOperation = 'source-over';
+                    const strands = 8;
+                    for (let i = 0; i < strands; i++) {
+                        const offset = (i - strands/2) * (brushSize * 0.15);
+                        ctx.strokeStyle = `rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, ${brushOpacity * Math.random()})`;
+                        ctx.lineWidth = Math.max(0.5, brushSize * 0.1);
+                        ctx.beginPath();
+                        ctx.moveTo(lastX + offset, lastY + offset);
+                        ctx.lineTo(pos.x + offset + (Math.random()-0.5)*2, pos.y + offset);
+                        ctx.stroke();
                     }
                     break;
 
-                case 'fabric_mesh': // 🧵 محاكاة نسيج القماش والخيش الحقيقي متقاطع الزوايا
-                    targetCtx.strokeStyle = convertHexToRgbA(color, opacity * 0.35);
-                    targetCtx.lineWidth = Math.max(0.8, size * 0.06);
-                    const meshSize = size * 0.5;
-                    targetCtx.beginPath();
-                    // خطوط طولية وعرضية متقاطعة تولد ملمس الخيش فوراً
-                    targetCtx.moveTo(p1.x - meshSize, p1.y); targetCtx.lineTo(p2.x - meshSize, p2.y);
-                    targetCtx.moveTo(p1.x + meshSize, p1.y); targetCtx.lineTo(p2.x + meshSize, p2.y);
-                    targetCtx.moveTo(p1.x, p1.y - meshSize); targetCtx.lineTo(p2.x, p2.y - meshSize);
-                    targetCtx.moveTo(p1.x, p1.y + meshSize); targetCtx.lineTo(p2.x, p2.y + meshSize);
-                    targetCtx.stroke();
-                    break;
-
-                case 'dust_brush': // 🌌 حبيبات غبار متبلورة وجزيئات دخان عشوائية التشظي
-                    targetCtx.fillStyle = convertHexToRgbA(color, opacity);
-                    for (let s = 0; s < steps; s++) {
-                        const t = s / steps;
-                        const x = p1.x + (p2.x - p1.x) * t;
-                        const y = p1.y + (p2.y - p1.y) * t;
-                        for (let d = 0; d < 4; d++) {
-                            const r = Math.random() * (size * 0.8);
-                            const ang = Math.random() * Math.PI * 2;
-                            const pSize = Math.random() * 2 + 0.5;
-                            targetCtx.fillRect(x + r * Math.cos(ang), y + r * Math.sin(ang), pSize, pSize);
-                        }
-                    }
-                    break;
-
-                case 'charcoal_t': // ✏️ فحم متفتت خشن ذو ملمس حبيبي ممتع
-                    targetCtx.fillStyle = convertHexToRgbA(color, opacity * 0.6);
-                    for (let s = 0; s < steps; s++) {
-                        const t = s / steps;
-                        const x = p1.x + (p2.x - p1.x) * t;
-                        const y = p1.y + (p2.y - p1.y) * t;
-                        for (let i = 0; i < 6; i++) {
-                            const radius = (Math.random() - 0.5) * size;
+                case 'chalk_grainy': // طباشير خشن (نقاط عشوائية على المسار)
+                    ctx.globalCompositeOperation = 'source-over';
+                    ctx.fillStyle = rgbaColor;
+                    const dist = Math.hypot(pos.x - lastX, pos.y - lastY);
+                    for (let i = 0; i < dist; i+=2) {
+                        const x = lastX + (pos.x - lastX) * (i / dist);
+                        const y = lastY + (pos.y - lastY) * (i / dist);
+                        for(let j=0; j<3; j++) {
+                            const r = Math.random() * brushSize;
                             const angle = Math.random() * Math.PI * 2;
-                            targetCtx.fillRect(x + radius * Math.cos(angle), y + radius * Math.sin(angle), 1.5, 1.5);
+                            ctx.fillRect(x + Math.cos(angle)*r, y + Math.sin(angle)*r, 1.5, 1.5);
                         }
                     }
                     break;
 
-                case 'wfringe': // 💧 ألوان مائية حقيقية مشبعة بحواف داكنة مجففة بالكامل
-                    targetCtx.strokeStyle = convertHexToRgbA(color, opacity * 0.35);
-                    targetCtx.lineWidth = size; targetCtx.lineCap = 'round';
-                    targetCtx.shadowBlur = 3; targetCtx.shadowColor = convertHexToRgbA(color, opacity * 0.9);
-                    targetCtx.beginPath(); targetCtx.moveTo(p1.x, p1.y); targetCtx.lineTo(p2.x, p2.y); targetCtx.stroke();
-                    targetCtx.shadowBlur = 0; 
+                case 'charcoal': // فحم حاد ومتقطع
+                    ctx.globalCompositeOperation = 'source-over';
+                    ctx.strokeStyle = `rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, ${brushOpacity * 0.6})`;
+                    ctx.lineWidth = brushSize;
+                    ctx.beginPath();
+                    ctx.moveTo(lastX + (Math.random()-0.5)*3, lastY);
+                    ctx.lineTo(pos.x, pos.y + (Math.random()-0.5)*3);
+                    ctx.stroke();
                     break;
 
-                case 'airbrush': // 💨 بخاخ ناعم متدرج الأطراف للتظليل الهادئ
-                    let g = targetCtx.createRadialGradient(p2.x, p2.y, 0, p2.x, p2.y, size * 1.3);
-                    g.addColorStop(0, convertHexToRgbA(color, opacity));
-                    g.addColorStop(1, convertHexToRgbA(color, 0));
-                    targetCtx.fillStyle = g;
-                    targetCtx.beginPath(); targetCtx.arc(p2.x, p2.y, size * 1.3, 0, Math.PI*2); targetCtx.fill();
+                case 'watercolor_fringe': // ألوان مائية مع حواف غامقة (Fringe)
+                    ctx.globalCompositeOperation = 'multiply';
+                    ctx.strokeStyle = rgbaColor;
+                    ctx.lineWidth = brushSize;
+                    ctx.shadowColor = `rgb(${currentColor.r}, ${currentColor.g}, ${currentColor.b})`;
+                    ctx.shadowBlur = 4; // تأثير الحافة الرطبة
+                    ctx.beginPath();
+                    ctx.moveTo(lastX, lastY);
+                    ctx.lineTo(pos.x, pos.y);
+                    ctx.stroke();
+                    ctx.shadowBlur = 0; // إعادة التعيين
                     break;
 
-                default: // الأسلوب القياسي بقية الأقلام
-                    drawStandardStroke(p1, p2, size, opacity, color);
+                case 'wet_smudge': // دمج رطب (يخفف العتامة ويدمج قليلاً)
+                    ctx.globalCompositeOperation = 'source-over';
+                    ctx.fillStyle = `rgba(${currentColor.r}, ${currentColor.g}, ${currentColor.b}, ${brushOpacity * 0.1})`;
+                    ctx.beginPath();
+                    ctx.arc(pos.x, pos.y, brushSize, 0, Math.PI * 2);
+                    ctx.fill();
                     break;
             }
+
+            lastX = pos.x;
+            lastY = pos.y;
         }
 
-        function drawStandardStroke(p1, p2, size, opacity, color) {
-            ctx.strokeStyle = convertHexToRgbA(color, opacity);
-            ctx.lineWidth = size; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
-            ctx.beginPath(); ctx.moveTo(p1.x, p1.y); ctx.lineTo(p2.x, p2.y); ctx.stroke();
-        }
+        // مستمعات الأحداث للكانفاس
+        canvas.addEventListener('mousedown', startPosition);
+        canvas.addEventListener('mouseup', endPosition);
+        canvas.addEventListener('mousemove', draw);
+        canvas.addEventListener('mouseout', endPosition);
 
-        function convertHexToRgbA(hex, opacity) {
-            const r = parseInt(hex.slice(1, 3), 16); const g = parseInt(hex.slice(3, 5), 16); const b = parseInt(hex.slice(5, 7), 16);
-            return `rgba(${r},${g},${b},${opacity})`;
-        }
+        canvas.addEventListener('touchstart', startPosition, {passive: false});
+        canvas.addEventListener('touchend', endPosition);
+        canvas.addEventListener('touchmove', draw, {passive: false});
 
-        function pickColorAtPoint(x, y) {
-            const imgData = ctx.getImageData(x * dpr, y * dpr, 1, 1).data;
-            if (imgData[3] === 0) return;
-            updateGlobalColor(`#${imgData[0].toString(16).padStart(2, '0')}${imgData[1].toString(16).padStart(2, '0')}${imgData[2].toString(16).padStart(2, '0')}`);
-        }
-
-        function updateGlobalColor(hex) {
-            selectedColor = hex;
-            document.getElementById('colorBoxPreview').style.backgroundColor = hex;
-            document.getElementById('colorHexText').innerText = hex.toUpperCase();
-            // إعادة توليد معاينات قائمة الفرش فوراً لتعكس اللون الجديد المختار بكفاءة
-            renderBrushesForCategory(document.querySelector('.tab-btn.active').getAttribute('data-cat'));
-        }
-
-        function executeFloodFill(startX, startY, fillHex) {
-            const w = canvas.width; const h = canvas.height;
-            const imgData = ctx.getImageData(0, 0, w, h); const data = imgData.data;
-            const sX = Math.floor(startX * dpr); const sY = Math.floor(startY * dpr);
-            if(sX < 0 || sX >= w || sY < 0 || sY >= h) return;
-            const targetR = parseInt(fillHex.slice(1,3), 16); const targetG = parseInt(fillHex.slice(3,5), 16); const targetB = parseInt(fillHex.slice(5,7), 16);
-            const startIdx = (sY * w + sX) * 4;
-            const startR = data[startIdx]; const startG = data[startIdx+1]; const startB = data[startIdx+2]; const startA = data[startIdx+3];
-            if (startR === targetR && startG === targetG && startB === targetB) return;
-            const queue = [[sX, sY]];
-            while(queue.length > 0) {
-                const [cx, cy] = queue.pop(); const idx = (cy * w + cx) * 4;
-                if(data[idx] === startR && data[idx+1] === startG && data[idx+2] === startB && data[idx+3] === startA) {
-                    data[idx] = targetR; data[idx+1] = targetG; data[idx+2] = targetB; data[idx+3] = 255;
-                    if(cx > 0) queue.push([cx - 1, cy]); if(cx < w - 1) queue.push([cx + 1, cy]);
-                    if(cy > 0) queue.push([cx, cy - 1]); if(cy < h - 1) queue.push([cx, cy + 1]);
-                }
-            }
-            ctx.putImageData(imgData, 0, 0);
-        }
-
-        // 🎨 إدارة عجلة الألوان المتناغمة الدائرية مع المربع الماسي الداخلي لـ ibis Paint
-        const hueCanvas = document.getElementById('hueCanvas'); const hueCtx = hueCanvas.getContext('2d');
-        const slCanvas = document.getElementById('slCanvas'); const slCtx = slCanvas.getContext('2d');
-        let currentHue = 200;
-
-        function renderHueWheel() {
-            const r = hueCanvas.width / 2; hueCtx.clearRect(0,0,hueCanvas.width,hueCanvas.height);
-            for(let angle=0; angle<360; angle++) {
-                const startRad = (angle - 0.5) * Math.PI / 180; const endRad = (angle + 0.5) * Math.PI / 180;
-                hueCtx.beginPath(); hueCtx.moveTo(r, r); hueCtx.arc(r, r, r, startRad, endRad); hueCtx.closePath();
-                hueCtx.fillStyle = `hsl(${angle}, 100%, 50%)`; hueCtx.fill();
-            }
-            hueCtx.globalCompositeOperation = 'destination-out'; hueCtx.beginPath(); hueCtx.arc(r, r, r - 20, 0, Math.PI * 2); hueCtx.fill();
-            hueCtx.globalCompositeOperation = 'source-over';
-        }
-
-        function renderSquareSL(hue) {
-            const w = slCanvas.width; const h = slCanvas.height;
-            for(let x=0; x<w; x++) {
-                for(let y=0; y<h; y++) {
-                    slCtx.fillStyle = `hsl(${hue}, ${(x/w)*100}%, ${(1-(y/h))*100}%)`;
-                    slCtx.fillRect(x, y, 1, 1);
-                }
-            }
-        }
-
-        function initColorPickers() {
-            renderHueWheel(); renderSquareSL(currentHue);
-            hueCanvas.addEventListener('pointerdown', handleHuePick);
-            hueCanvas.addEventListener('pointermove', (e) => { if(e.buttons === 1) handleHuePick(e); });
-            slCanvas.addEventListener('pointerdown', handleSLPick);
-            slCanvas.addEventListener('pointermove', (e) => { if(e.buttons === 1) handleSLPick(e); });
-        }
-
-        function handleHuePick(e) {
-            const rect = hueCanvas.getBoundingClientRect();
-            const x = e.clientX - rect.left - rect.width/2; const y = e.clientY - rect.top - rect.height/2;
-            let angle = Math.atan2(y, x) * 180 / Math.PI; if(angle < 0) angle += 360;
-            currentHue = Math.floor(angle);
-            const rad = angle * Math.PI / 180;
-            document.getElementById('huePicker').style.left = (rect.width/2 + (rect.width/2 - 10) * Math.cos(rad)) + 'px';
-            document.getElementById('huePicker').style.top = (rect.height/2 + (rect.height/2 - 10) * Math.sin(rad)) + 'px';
-            renderSquareSL(currentHue);
-        }
-
-        function handleSLPick(e) {
-            const rect = slCanvas.getBoundingClientRect();
-            const x = Math.max(0, Math.min(rect.width, e.clientX - rect.left));
-            const y = Math.max(0, Math.min(rect.height, e.clientY - rect.top));
-            document.getElementById('slPicker').style.left = (x + 35) + 'px'; document.getElementById('slPicker').style.top = (y + 35) + 'px';
-            updateGlobalColor(hslToHex(currentHue, (x / rect.width) * 100, (1 - (y / rect.height)) * 100));
-        }
-
-        function hslToHex(h, s, l) {
-            l /= 100; const a = s * Math.min(l, 1 - l) / 100;
-            const f = n => { const k = (n + h / 30) % 12; return Math.round(255 * (l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1))).toString(16).padStart(2, '0'); };
-            return `#${f(0)}${f(4)}${f(8)}`;
-        }
-
-        // 🖌️ خوارزمية توليد قائمة الفرش الاحترافية مع أيقونة الرندرة الحية أمام كل اسم
-        const brushesListContainer = document.getElementById('brushesList');
-        const tabButtons = document.querySelectorAll('.tab-btn');
-
-        function renderBrushesForCategory(category) {
-            brushesListContainer.innerHTML = '';
-            brushesDatabase[category].forEach(brush => {
-                const item = document.createElement('div');
-                item.className = `brush-item ${brush.id === currentSelectedBrushId ? 'active' : ''}`;
-                
-                // هيكل الصف: الاسم جهة اليمين، والـ Canvas الخاص بالمعاينة الفورية جهة اليسار
-                item.innerHTML = `
-                    <div class="brush-info">
-                        <div class="brush-name">${brush.name}</div>
-                    </div>
-                    <div class="brush-preview-stroke">
-                        <canvas id="pre_${brush.id}" width="90" height="32"></canvas>
-                    </div>
-                `;
-                
-                item.addEventListener('click', () => {
-                    document.querySelectorAll('.brush-item').forEach(i => i.classList.remove('active'));
-                    item.classList.add('active');
-                    currentSelectedBrushId = brush.id;
-                    document.getElementById('brushesPopup').classList.remove('show');
-                });
-                
-                brushesListContainer.appendChild(item);
-                // رسم خط تمثيلي صغير يحاكي ضربة القلم الحقيقية داخل الأيقونة فورا
-                generateMicroStrokePreview(brush.id);
-            });
-        }
-
-        function generateMicroStrokePreview(id) {
-            setTimeout(() => {
-                const pCanvas = document.getElementById(`pre_${id}`);
-                if (!pCanvas) return;
-                const pCtx = pCanvas.getContext('2d');
-                pCtx.clearRect(0,0,90,32);
-                
-                // رسم ضربة تموجية من اليمين إلى اليسار لمعاينة شكل الفرشاة الفعلي
-                const p1 = { x: 15, y: 16 };
-                const p2 = { x: 75, y: 16 };
-                
-                pCtx.save();
-                renderAdvancedRealBrushes(pCtx, p1, p2, 14, 1.0, selectedColor, id);
-                pCtx.restore();
-            }, 5);
-        }
-
-        tabButtons.forEach(tab => {
-            tab.addEventListener('click', () => {
-                tabButtons.forEach(t => t.classList.remove('active'));
-                tab.classList.add('active');
-                renderBrushesForCategory(tab.getAttribute('data-cat'));
-            });
-        });
-
-        // تشغيل النوافذ والمنبثقات بمرونة مانعة للتداخل
-        const toggleToolsBtn = document.getElementById('toggleToolsBtn');
-        const toolsPopup = document.getElementById('toolsPopup');
-        const toggleBrushesBtn = document.getElementById('toggleBrushesBtn');
-        const brushesPopup = document.getElementById('brushesPopup');
-        const toggleColorBtn = document.getElementById('toggleColorBtn');
-        const colorPanel = document.getElementById('colorPanel');
-
-        toggleToolsBtn.addEventListener('click', (e) => { e.stopPropagation(); hideAllPanels(); toolsPopup.classList.toggle('show'); });
-        toggleBrushesBtn.addEventListener('click', (e) => { e.stopPropagation(); hideAllPanels(); renderBrushesForCategory(document.querySelector('.tab-btn.active').getAttribute('data-cat')); brushesPopup.classList.toggle('show'); });
-        toggleColorBtn.addEventListener('click', (e) => { e.stopPropagation(); hideAllPanels(); colorPanel.classList.toggle('show'); });
-
-        function hideAllPanels() { toolsPopup.classList.remove('show'); brushesPopup.classList.remove('show'); colorPanel.classList.remove('show'); }
-
-        document.querySelectorAll('.tool-row').forEach(row => {
-            row.addEventListener('click', () => {
-                document.querySelectorAll('.tool-row').forEach(r => r.classList.remove('active'));
-                row.classList.add('active'); activeTool = row.getAttribute('data-tool'); hideAllPanels();
-            });
-        });
-
-        workspace.addEventListener('click', (e) => { if(e.target.id === 'workspace' || e.target.id === 'paintCanvas') hideAllPanels(); });
-
-        initColorPickers();
-        renderBrushesForCategory('hair');
-        updateUndoRedoButtons();
     </script>
 </body>
 </html>
