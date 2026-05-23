@@ -3,77 +3,77 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>NubeSketch Engine V3</title>
+    <title>NubeSketch Ultra Engine Pro</title>
     <style>
         * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', system-ui, sans-serif; user-select: none; -webkit-user-select: none; }
-        body { background: #0c0a09; color: #f5f5f4; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        body { background: #09090b; color: #f4f4f5; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
         
-        /* شريط علوي فخم */
-        .top-bar { height: 50px; background: #1c1917; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; border-bottom: 1px solid #2e2a24; z-index: 10; }
-        .brand { font-weight: 800; font-size: 16px; color: #e7e5e4; letter-spacing: 1px; }
+        .top-bar { height: 50px; background: #18181b; display: flex; justify-content: space-between; align-items: center; padding: 0 15px; border-bottom: 1px solid #27272a; z-index: 10; }
+        .brand { font-weight: 800; font-size: 16px; color: #e4e4e7; letter-spacing: 1px; }
         .brand span { color: #d4af37; }
-        .top-actions { display: flex; gap: 10px; }
+        .top-actions { display: flex; gap: 8px; align-items: center; }
 
-        /* منطقة العمل */
-        .workspace { flex: 1; position: relative; display: flex; justify-content: center; align-items: center; background: #141210; overflow: hidden; }
-        
-        /* حاوية الطبقات المتعددة فوق بعضها بدقة */
-        .canvas-container { position: relative; box-shadow: 0 15px 40px rgba(0,0,0,0.8); background: #ffffff; overflow: hidden; }
-        .canvas-container canvas { position: absolute; top: 0; left: 0; display: block; image-rendering: optimizeQuality; }
-        /* طبقة الرسم النشطة تكون في الأعلى برمجياً أثناء التفاعل */
-        
-        /* شريط الأدوات الجانبي السريع للتحكم الفوري (حجم وشفافية) */
-        .side-sliders { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 25px; background: rgba(28,25,23,0.85); backdrop-filter: blur(10px); padding: 20px 12px; border-radius: 20px; border: 1px solid #3f3f46; z-index: 10; }
-        .vertical-slider-group { display: flex; flex-direction: column; align-items: center; gap: 8px; font-size: 11px; color: #a8a29e; }
-        .vertical-slider-group input { writing-mode: vertical-lr; direction: ltr; width: 15px; height: 120px; accent-color: #d4af37; cursor: pointer; }
+        .workspace { flex: 1; position: relative; display: flex; justify-content: center; align-items: center; background: #111114; overflow: hidden; }
+        .canvas-container { position: relative; box-shadow: 0 15px 40px rgba(0,0,0,0.8); background: #ffffff; }
+        .canvas-container canvas { position: absolute; top: 0; left: 0; display: block; }
+
+        /* التحكم الجانبي النحيف للفرشاة */
+        .side-sliders { position: absolute; right: 15px; top: 50%; transform: translateY(-50%); display: flex; flex-direction: column; gap: 20px; background: rgba(24,24,27,0.9); backdrop-filter: blur(10px); padding: 15px 10px; border-radius: 20px; border: 1px solid #3f3f46; z-index: 10; }
+        .vertical-slider-group { display: flex; flex-direction: column; align-items: center; gap: 6px; font-size: 11px; color: #a1a1aa; }
+        .vertical-slider-group input { writing-mode: vertical-lr; direction: ltr; width: 12px; height: 100px; accent-color: #d4af37; cursor: pointer; }
 
         /* شريط الأدوات السفلي العائم */
-        .bottom-nav { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(28, 25, 23, 0.95); backdrop-filter: blur(12px); border: 1px solid #44403c; padding: 6px 16px; border-radius: 30px; display: flex; gap: 15px; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.7); z-index: 10; }
-        .nav-item { background: none; border: none; color: #a8a29e; font-size: 20px; cursor: pointer; padding: 8px; border-radius: 50%; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
-        .nav-item.active { color: #d4af37; background: #2e2a24; transform: scale(1.05); }
+        .bottom-nav { position: absolute; bottom: 20px; left: 50%; transform: translateX(-50%); background: rgba(24, 24, 27, 0.95); backdrop-filter: blur(12px); border: 1px solid #3f3f46; padding: 6px 16px; border-radius: 30px; display: flex; gap: 12px; align-items: center; box-shadow: 0 10px 30px rgba(0,0,0,0.7); z-index: 10; }
+        .nav-item { background: none; border: none; color: #a1a1aa; font-size: 18px; cursor: pointer; padding: 8px; border-radius: 50%; transition: all 0.2s; display: flex; align-items: center; justify-content: center; }
+        .nav-item.active { color: #d4af37; background: #27272a; transform: scale(1.05); }
 
         /* اللوحات المنبثقة الفخمة */
-        .panel { position: absolute; bottom: 85px; left: 50%; transform: translateX(-50%); background: #1c1917; border: 1px solid #3c3836; border-radius: 16px; padding: 15px; width: 290px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); display: none; flex-direction: column; gap: 12px; z-index: 15; }
+        .panel { position: absolute; bottom: 85px; left: 50%; transform: translateX(-50%); background: #18181b; border: 1px solid #27272a; border-radius: 16px; padding: 15px; width: 310px; box-shadow: 0 20px 40px rgba(0,0,0,0.6); display: none; flex-direction: column; gap: 10px; z-index: 15; }
         .panel.show { display: flex; }
-        .panel-title { font-size: 13px; color: #78716c; font-weight: 600; border-bottom: 1px solid #2e2a24; padding-bottom: 5px; display: flex; justify-content: space-between; }
+        .panel-title { font-size: 13px; color: #71717a; font-weight: 600; border-bottom: 1px solid #27272a; padding-bottom: 5px; display: flex; justify-content: space-between; }
 
-        /* تصميم مدير الطبقات */
-        .layers-list { display: flex; flex-direction: column; gap: 6px; max-height: 160px; overflow-y: auto; padding-right: 2px; }
-        .layer-item { display: flex; align-items: center; justify-content: space-between; background: #262220; padding: 8px 12px; border-radius: 8px; border: 1px solid transparent; cursor: pointer; }
-        .layer-item.active { border-color: #d4af37; background: #322b24; }
-        .layer-meta { display: flex; align-items: center; gap: 8px; font-size: 13px; }
-        .layer-controls { display: flex; gap: 8px; }
-        .layer-btn { background: none; border: none; color: #a8a29e; cursor: pointer; font-size: 14px; }
-        .layer-btn.active { color: #d4af37; }
-        .layer-actions-bar { display: flex; justify-content: space-between; margin-top: 5px; }
+        /* قائمة الـ 15 فرشاة المتقدمة */
+        .brush-list-container { max-height: 220px; overflow-y: auto; display: flex; flex-direction: column; gap: 5px; padding-left: 2px; }
+        .brush-row-item { display: flex; align-items: center; justify-content: space-between; background: #27272a; padding: 8px 12px; border-radius: 8px; font-size: 12px; cursor: pointer; border: 1px solid transparent; color: #e4e4e7; }
+        .brush-row-item.selected { border-color: #d4af37; color: #d4af37; background: #1e1b12; }
+        .brush-meta { display: flex; flex-direction: column; gap: 2px; text-align: right; }
+        .brush-meta span:last-child { font-size: 10px; color: #71717a; }
 
-        /* ميزات الفرش المتقدمة */
-        .brush-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-        .brush-option { background: #262220; border: 1px solid transparent; color: #e7e5e4; padding: 10px; border-radius: 8px; font-size: 12px; cursor: pointer; text-align: center; }
-        .brush-option.selected { border-color: #d4af37; color: #d4af37; background: #322b24; }
+        /* هيكل مدير الطبقات */
+        .layers-list { display: flex; flex-direction: column; gap: 6px; max-height: 150px; overflow-y: auto; }
+        .layer-item { display: flex; align-items: center; justify-content: space-between; background: #27272a; padding: 8px 12px; border-radius: 8px; border: 1px solid transparent; cursor: pointer; }
+        .layer-item.active { border-color: #d4af37; background: #1e1b12; }
 
-        .btn-premium { background: #d4af37; color: #0c0a09; font-weight: 700; border: none; padding: 6px 16px; border-radius: 20px; font-size: 13px; cursor: pointer; box-shadow: 0 4px 10px rgba(212,175,55,0.25); }
-        .btn-secondary { background: #262220; color: #e7e5e4; border: none; padding: 6px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; }
+        /* واجهة عجلة الألوان والـ Canvas الخاص بها */
+        .color-wheel-wrapper { display: flex; flex-direction: column; align-items: center; gap: 10px; padding: 5px 0; }
+        #colorWheel { cursor: crosshair; background: transparent; border-radius: 50%; }
+        .color-preview-bar { width: 100%; height: 25px; border-radius: 6px; border: 1px solid #27272a; transition: background 0.1s; }
+
+        /* الأزرار الفخمة */
+        .btn-icon { background: #27272a; border: 1px solid #3f3f46; color: #e4e4e7; width: 32px; height: 32px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; font-size: 14px; }
+        .btn-icon:disabled { opacity: 0.3; cursor: not-allowed; }
+        .btn-premium { background: #d4af37; color: #09090b; font-weight: 700; border: none; padding: 6px 14px; border-radius: 20px; font-size: 13px; cursor: pointer; box-shadow: 0 4px 10px rgba(212,175,55,0.25); }
+        .btn-secondary { background: #27272a; color: #e4e4e7; border: none; padding: 6px 12px; border-radius: 20px; font-size: 13px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-    <!-- الشريط العلوي -->
+    <!-- الشريط العلوي مع زر التراجع والإعادة الفوري -->
     <div class="top-bar">
-        <div class="brand">Nube<span>Sketch</span> Pro</div>
+        <div class="brand">Nube<span>Sketch</span> Pro Studio</div>
         <div class="top-actions">
+            <button class="btn-icon" id="btn-undo" title="تراجع (↩️)">↩️</button>
+            <button class="btn-icon" id="btn-redo" title="إعادة (↪️)">↪️</button>
             <button class="btn-secondary" id="clear">تصفية</button>
             <button class="btn-premium" id="share">تصدير ✨</button>
         </div>
     </div>
 
-    <!-- مساحة الرسم الذكية -->
+    <!-- مساحة الرسم والتفاعل العالي -->
     <div class="workspace">
-        
-        <!-- حاوية الكانفاس الديناميكية للطبقات -->
         <div class="canvas-container" id="canvasContainer"></div>
 
-        <!-- شريط التحكم الجانبي النحيف (ستايل إيبيس باينت الفوري) -->
+        <!-- شريط التحكم الفوري الجانبي -->
         <div class="side-sliders">
             <div class="vertical-slider-group">
                 <span>الحجم</span>
@@ -85,43 +85,50 @@
             </div>
         </div>
 
-        <!-- لوحة الفرش والمثبت (Stabilizer) -->
+        <!-- لوحة الـ 15 فرشاة الاحترافية وعنصر الـ Stabilizer -->
         <div class="panel" id="brushPanel">
-            <div class="panel-title">تخصيص أداة الرسم</div>
-            <div class="vertical-slider-group" style="flex-direction:row; justify-content:space-between; width:100%; padding: 5px 0;">
-                <span>مُثبّت الخطوط (Stabilizer)</span>
-                <input type="range" id="stabilizer" min="0" max="20" value="8" style="writing-mode:horizontal-tb; width:100px; height:auto;">
+            <div class="panel-title">
+                <span>استوديو الفرش الاحترافي</span>
+                <span style="font-size:11px; color:#d4af37;">15 أداة متطورة</span>
             </div>
-            <div class="brush-grid">
-                <div class="brush-option selected" data-brush="pen">قلم حبر جرافيك</div>
-                <div class="brush-option" data-brush="brush">بخاخ ناعم (Airbrush)</div>
-                <div class="brush-option" data-brush="hair">فرشاة شعر تفاعلية</div>
-                <div class="brush-option" data-brush="fabric">نسيج الكتان الحقيقي</div>
+            <div style="display:flex; justify-content:space-between; align-items:center; font-size:11px; color:#a1a1aa; background:#27272a; padding:6px; border-radius:8px; margin-bottom:5px;">
+                <span>تثبيت التعرج (Stabilizer)</span>
+                <input type="range" id="stabilizer" min="0" max="20" value="10" style="accent-color:#d4af37; width:110px;">
+            </div>
+            <div class="brush-list-container" id="brushList">
+                <!-- سيتم ملء الفرش الـ 15 ديناميكياً بواسطة جافا سكريبت -->
             </div>
         </div>
 
-        <!-- لوحة نظام الطبقات الاحترافي (Layers Panel) -->
+        <!-- لوحة عجلة الألوان الدائرية المتكاملة (HSV Color Wheel) -->
+        <div class="panel" id="colorPanel">
+            <div class="panel-title">عجلة الألوان الشاملة</div>
+            <div class="color-wheel-wrapper">
+                <canvas id="colorWheel" width="180" height="180"></canvas>
+                <div class="color-preview-bar" id="colorPreview"></div>
+            </div>
+        </div>
+
+        <!-- لوحة نظام مدير الطبقات المتقدم -->
         <div class="panel" id="layersPanel">
             <div class="panel-title">
-                <span>إدارة الطبقات</span>
-                <span id="layer-count">الطبقات: 1</span>
+                <span>الطبقات الفنية</span>
+                <span id="layer-count">1</span>
             </div>
-            <div class="layers-list" id="layersList">
-                <!-- سيتم توليد بنية الطبقات برمجياً هنا -->
-            </div>
-            <div class="layer-actions-bar">
-                <button class="btn-secondary" id="add-layer" style="padding:4px 10px; font-size:12px;">+ طبقة جديدة</button>
-                <button class="btn-secondary" id="delete-layer" style="padding:4px 10px; font-size:12px; color:#ef4444;">حذف</button>
+            <div class="layers-list" id="layersList"></div>
+            <div style="display:flex; justify-content:space-between; margin-top:5px;">
+                <button class="btn-secondary" id="add-layer" style="padding:4px 10px; font-size:11px;">+ طبقة</button>
+                <button class="btn-secondary" id="delete-layer" style="padding:4px 10px; font-size:11px; color:#ef4444;">حذف</button>
             </div>
         </div>
 
-        <!-- شريط التنقل السفلي الاحترافي -->
+        <!-- شريط التنقل السفلي الاحترافي الاستوديو -->
         <div class="bottom-nav">
-            <button class="nav-item active" id="nav-draw" data-main-tool="draw" title="الرسم">🖌️</button>
-            <button class="nav-item" id="nav-eraser" data-main-tool="eraser" title="الممحاة">🧽</button>
-            <button class="nav-item" id="nav-bucket" data-main-tool="bucket" title="دلو التلوين">🪣</button>
-            <input type="color" id="color" style="width:30px; height:30px; border:none; border-radius:50%; background:none; cursor:pointer;" value="#000000">
-            <button class="nav-item" id="toggle-brush-panel" title="الفرش والمثبت">🎨</button>
+            <button class="nav-item active" id="nav-draw" data-main-tool="draw">🖌️</button>
+            <button class="nav-item" id="nav-eraser" data-main-tool="eraser">🧽</button>
+            <button class="nav-item" id="nav-bucket" data-main-tool="bucket">🪣</button>
+            <button class="nav-item" id="toggle-color-panel" style="font-size:22px; color:#d4af37;" title="عجلة الألوان">⭕</button>
+            <button class="nav-item" id="toggle-brush-panel" title="لوحة الفرش الـ 15">🎨</button>
             <button class="nav-item" id="toggle-layers-panel" title="الطبقات">🥞</button>
         </div>
     </div>
@@ -129,324 +136,408 @@
     <script>
         const container = document.getElementById('canvasContainer');
         const layersList = document.getElementById('layersList');
+        const brushListContainer = document.getElementById('brushList');
         
-        // إعدادات أبعاد اللوحة الفنية ثابتة وموحدة لجميع الطبقات
-        const canvasWidth = window.innerWidth - 70;
+        const canvasWidth = window.innerWidth - 65;
         const canvasHeight = window.innerHeight - 160;
         container.style.width = canvasWidth + 'px';
         container.style.height = canvasHeight + 'px';
 
-        let layers = []; // مصفوفة لتخزين الكائنات البرمجية للطبقات
+        let layers = [];
         let activeLayerIndex = 0;
         let layerCounter = 0;
 
         let painting = false;
-        let currentTool = 'draw'; 
-        let currentBrush = 'pen';
-
-        // محاذاة تنعيم وتثبيت الخطوط الإحترافي (Stabilizer)
+        let currentTool = 'draw';
+        let currentBrush = 'g-pen';
         let strokePoints = [];
+        let currentColorHex = '#000000';
 
-        // دالة إنشاء طبقة برمجية وفيزيائية جديدة داخل الحاوية
+        // تعريف مصفوفة الـ 15 فرشاة الفنية والاحترافية
+        const BRUSHES_DATABASE = [
+            { id: 'g-pen', name: 'قلم حبر G-Pen حاد', desc: 'مثالي للتحبير المانجا والـ Line Art النظيف' },
+            { id: 'digital-pen', name: 'قلم رقمي صلب الكثافة', desc: 'رسم رقمي مستقر مع أطراف حادة' },
+            { id: 'pencil-hb', name: 'قلم رصاص تفاعلي HB', desc: 'محاكاة ملمس الجرافيت والاسكتشات' },
+            { id: 'airbrush', name: 'بخاخ هوائي ناعم (Airbrush)', desc: 'لتوزيع الظلال والتدرجات الناعمة' },
+            { id: 'pro-hair', name: 'فرشاة خصلات الشعر الفنية (Ultra)', desc: 'توزيع شعيرات حقيقية انسيابية مع اتجاه السحب' },
+            { id: 'watercolor', name: 'ألوان مائية رطبة ممزوجة', desc: 'تأثير ألوان مائية شفافة متداخلة دافئة' },
+            { id: 'oil-brush', name: 'فرشاة ألوان زيتية كثيفة', desc: 'ملمس زيتي سميك عند التراكب' },
+            { id: 'linen-fabric', name: 'نسيج الكتان والقماش الفاخر', desc: 'إضافة تأثير ألياف قماشية ناعمة عشوائية' },
+            { id: 'fur-texture', name: 'فرشاة فرو الكائنات الناعمة', desc: 'محاكاة خصلات الفرو الدقيقة التفاعلية' },
+            { id: 'charcoal', name: 'فحم فني خشن طبيعي', desc: 'حبيبات فحم داكنة للرسم الكلاسيكي' },
+            { id: 'gouache', name: 'ألوان الجواش الغنية', desc: 'تغطية لونية مخملية نصف مطفية' },
+            { id: 'sparkle', name: 'بخاخ نجوم مضيئة وجزيئات', desc: 'إضافة تأثير بريق جزيئات مضيئة سحرية' },
+            { id: 'splatter', name: 'بقع حبر متناثرة عشوائية', desc: 'تأثير بقع طلاء متناثرة فنية' },
+            { id: 'shading-mesh', name: 'فرشاة تظليل شبكي ريترو', desc: 'خطوط شبكية متقاطعة لتظليل الكوميك' },
+            { id: 'concrete-wall', name: 'ملمس جدار خرساني خشن', desc: 'تأثير حائط جاف وخشن للملفات الخلفية' }
+        ];
+
+        // مصفوفات نظام التراجع والإعادة (Undo / Redo Management)
+        let undoStack = [];
+        let redoStack = [];
+        const MAX_STATES = 15; // عدد خطوات التراجع لحفظ ذاكرة التطبيق خفيفة
+
+        function saveState() {
+            // حفظ لقطة كاملة من بيانات بيكسلات الكانفاس النشط حالياً
+            const activeCanvas = layers[activeLayerIndex].canvas;
+            const ctx = layers[activeLayerIndex].ctx;
+            const imgData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
+            
+            // دفع الحالة بداخل المكدس المخصص لهذه الطبقة
+            if(!activeCanvas.undoHistory) activeCanvas.undoHistory = [];
+            activeCanvas.undoHistory.push(imgData);
+            
+            if(activeCanvas.undoHistory.length > MAX_STATES) activeCanvas.undoHistory.shift();
+            activeCanvas.redoHistory = []; // مسح الـ Redo بمجرد حدوث رسم جديد
+            updateUndoRedoButtonsState();
+        }
+
+        function executeUndo() {
+            const activeCanvas = layers[activeLayerIndex].canvas;
+            const ctx = layers[activeLayerIndex].ctx;
+            if (!activeCanvas.undoHistory || activeCanvas.undoHistory.length === 0) return;
+
+            // أخذ لقطة للحالة الحالية لدفعها لـ Redo قبل التراجع
+            const currentImgData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
+            if(!activeCanvas.redoHistory) activeCanvas.redoHistory = [];
+            activeCanvas.redoHistory.push(currentImgData);
+
+            // استعادة اللقطة السابقة
+            const previousState = activeCanvas.undoHistory.pop();
+            ctx.putImageData(previousState, 0, 0);
+            updateUndoRedoButtonsState();
+        }
+
+        function executeRedo() {
+            const activeCanvas = layers[activeLayerIndex].canvas;
+            const ctx = layers[activeLayerIndex].ctx;
+            if (!activeCanvas.redoHistory || activeCanvas.redoHistory.length === 0) return;
+
+            const currentImgData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
+            activeCanvas.undoHistory.push(currentImgData);
+
+            const nextState = activeCanvas.redoHistory.pop();
+            ctx.putImageData(nextState, 0, 0);
+            updateUndoRedoButtonsState();
+        }
+
+        function updateUndoRedoButtonsState() {
+            const activeCanvas = layers[activeLayerIndex]?.canvas;
+            document.getElementById('btn-undo').disabled = !(activeCanvas?.undoHistory && activeCanvas.undoHistory.length > 0);
+            document.getElementById('btn-redo').disabled = !(activeCanvas?.redoHistory && activeCanvas.redoHistory.length > 0);
+        }
+
+        document.getElementById('btn-undo').addEventListener('click', executeUndo);
+        document.getElementById('btn-redo').addEventListener('click', executeRedo);
+
+        // إنشاء وعرض قائمة الفرش الـ 15 الاحترافية في الواجهة
+        function buildBrushesListUI() {
+            brushListContainer.innerHTML = '';
+            BRUSHES_DATABASE.forEach(brush => {
+                const row = document.createElement('div');
+                row.className = `brush-row-item ${brush.id === currentBrush ? 'selected' : ''}`;
+                row.onclick = () => {
+                    currentBrush = brush.id;
+                    buildBrushesListUI();
+                };
+                row.innerHTML = `
+                    <div class="brush-meta">
+                        <span>${brush.name}</span>
+                        <span>${brush.desc}</span>
+                    </div>
+                    <span>🖌️</span>
+                `;
+                brushListContainer.appendChild(row);
+            });
+        }
+
+        // بناء وتشغيل نظام عجلة الألوان الدائرية الذكي (HSV Color Wheel)
+        const colorWheel = document.getElementById('colorWheel');
+        const wheelCtx = colorWheel.getContext('2d');
+        const radius = colorWheel.width / 2;
+
+        function drawColorWheel() {
+            for (let x = -radius; x < radius; x++) {
+                for (let y = -radius; y < radius; y++) {
+                    const dist = Math.sqrt(x*x + y*y);
+                    if (dist > radius) continue;
+
+                    let angle = Math.atan2(y, x);
+                    if (angle < 0) angle += 2 * Math.PI;
+
+                    const hue = (angle / (2 * Math.PI)) * 360;
+                    const saturation = dist / radius;
+                    const value = 1.0;
+
+                    wheelCtx.fillStyle = `hsl(${hue}, ${saturation * 100}%, ${value * 50}%)`;
+                    wheelCtx.fillRect(x + radius, y + radius, 1, 1);
+                }
+            }
+        }
+
+        colorWheel.addEventListener('pointerdown', pickColorWheel);
+        colorWheel.addEventListener('pointermove', (e) => { if(e.buttons === 1) pickColorWheel(e); });
+
+        function pickColorWheel(e) {
+            const rect = colorWheel.getBoundingClientRect();
+            const x = e.clientX - rect.left - radius;
+            const y = e.clientY - rect.top - radius;
+            const dist = Math.sqrt(x*x + y*y);
+            if (dist > radius) return;
+
+            let angle = Math.atan2(y, x);
+            if (angle < 0) angle += 2 * Math.PI;
+
+            const hue = (angle / (2 * Math.PI)) * 360;
+            const saturation = Math.min(1, dist / radius) * 100;
+            
+            currentColorHex = hslToHex(hue, saturation, 50);
+            document.getElementById('colorPreview').style.background = currentColorHex;
+        }
+
+        function hslToHex(h, s, l) {
+            l /= 100; const a = s * Math.min(l, 1 - l) / 100;
+            const f = n => {
+                const k = (n + h / 30) % 12;
+                const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+                return Math.round(255 * color).toString(16).padStart(2, '0');
+            };
+            return `#${f(0)}${f(4)}${f(8)}`;
+        }
+
+        // إنشاء طبقة جديدة
         function createLayer() {
             layerCounter++;
             const canvas = document.createElement('canvas');
-            canvas.width = canvasWidth;
-            canvas.height = canvasHeight;
-            canvas.style.zIndex = layers.length; // ترتيب ظهور الطبقة عمودياً
+            canvas.width = canvasWidth; canvas.height = canvasHeight;
+            canvas.style.zIndex = layers.length;
             container.appendChild(canvas);
 
             const ctx = canvas.getContext('2d', { willReadFrequently: true });
-            
-            const layerObj = {
-                id: layerCounter,
-                name: `طبقة ${layerCounter}`,
-                canvas: canvas,
-                ctx: ctx,
-                alphaLock: false
-            };
+            const layerObj = { id: layerCounter, name: `طبقة فنية ${layerCounter}`, canvas: canvas, ctx: ctx, alphaLock: false };
 
-            // الطبقة الأولى يتم تعبئتها بالخلفية البيضاء الأساسية
             if (layers.length === 0) {
-                ctx.fillStyle = "#ffffff";
-                ctx.fillRect(0, 0, canvasWidth, canvasHeight);
+                ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, canvasWidth, canvasHeight);
             }
 
             layers.push(layerObj);
             activeLayerIndex = layers.length - 1;
             renderLayersUI();
             updateActiveCanvasListeners();
+            updateUndoRedoButtonsState();
         }
 
-        // تحديث وعرض واجهة مدير الطبقات الفخم
         function renderLayersUI() {
             layersList.innerHTML = '';
             document.getElementById('layer-count').innerText = `الطبقات: ${layers.length}`;
-            
-            // نعرضها مقلوبة لتطابق الترتيب البصري (العليا فوق)
             for (let i = layers.length - 1; i >= 0; i--) {
                 const layer = layers[i];
                 const item = document.createElement('div');
                 item.className = `layer-item ${i === activeLayerIndex ? 'active' : ''}`;
-                item.onclick = () => { activeLayerIndex = i; renderLayersUI(); updateActiveCanvasListeners(); };
-
-                item.innerHTML = `
-                    <div class="layer-meta">
-                        <span>🥞</span>
-                        <span>${layer.name}</span>
-                    </div>
-                    <div class="layer-controls">
-                        <button class="layer-btn ${layer.alphaLock ? 'active' : ''}" onclick="event.stopPropagation(); toggleAlphaLock(${i});" title="قفل الشفافية">🔒</button>
-                    </div>
-                `;
+                item.onclick = () => { activeLayerIndex = i; renderLayersUI(); updateActiveCanvasListeners(); updateUndoRedoButtonsState(); };
+                item.innerHTML = `<div style="font-size:12px;">🥞 ${layer.name}</div> <button class="layer-btn" onclick="event.stopPropagation(); toggleAlphaLock(${i});">${layer.alphaLock ? '🔒' : '🔓'}</button>`;
                 layersList.appendChild(item);
             }
         }
 
-        function toggleAlphaLock(index) {
-            layers[index].alphaLock = !layers[index].alphaLock;
-            renderLayersUI();
-        }
+        function toggleAlphaLock(idx) { layers[idx].alphaLock = !layers[idx].alphaLock; renderLayersUI(); }
 
-        // دالة تحديث ربط أحداث الإدخال بالطبقة الفعالة حالياً فقط
         function updateActiveCanvasListeners() {
-            // إزالة المستمعات من كل الطبقات لمنع التداخل
-            layers.forEach(l => {
-                const c = l.canvas;
-                c.onmousedown = c.onmouseup = c.onmousemove = null;
-                c.ontouchstart = c.ontouchend = c.ontouchmove = null;
-                c.style.pointerEvents = 'none'; // تعطيل التفاعل البصري
-            });
-
-            // تفعيل التفاعل فقط على الكانفاس النشط حالياً
+            layers.forEach(l => { l.canvas.style.pointerEvents = 'none'; });
             const activeCanvas = layers[activeLayerIndex].canvas;
             activeCanvas.style.pointerEvents = 'auto';
 
-            activeCanvas.addEventListener('mousedown', startStroke);
-            activeCanvas.addEventListener('mouseup', stopStroke);
-            activeCanvas.addEventListener('mousemove', moveStroke);
-            activeCanvas.addEventListener('touchstart', (e) => { e.preventDefault(); startStroke(e); });
-            activeCanvas.addEventListener('touchend', stopStroke);
-            activeCanvas.addEventListener('touchmove', (e) => { e.preventDefault(); moveStroke(e); });
+            activeCanvas.onmousedown = startStroke; activeCanvas.onmouseup = stopStroke; activeCanvas.onmousemove = moveStroke;
+            activeCanvas.ontouchstart = (e) => { e.preventDefault(); startStroke(e); };
+            activeCanvas.ontouchend = stopStroke; activeCanvas.ontouchmove = (e) => { e.preventDefault(); moveStroke(e); };
         }
 
-        // تحويل الهكس للألوان ودمج الشفافية الحالية لفرش الرسم
         function getDrawColor() {
-            const hex = document.getElementById('color').value;
+            const hex = currentColorHex;
             const opacity = document.getElementById('opacity').value / 100;
-            const r = parseInt(hex.slice(1, 3), 16);
-            const g = parseInt(hex.slice(3, 5), 16);
-            const b = parseInt(hex.slice(5, 7), 16);
+            const r = parseInt(hex.slice(1, 3), 16); const g = parseInt(hex.slice(3, 5), 16); const b = parseInt(hex.slice(5, 7), 16);
             return { r, g, b, a: opacity, string: `rgba(${r},${g},${b},${opacity})` };
         }
 
-        // محرك الرسم المتطور المدعم بخواص قفل الشفافية وتنعيم المسار
+        // محرك الفرش الـ 15 عالي الاحترافية والمحاكاة الطبيعية
         function runDrawingEngine(p0, p1, xc, yc) {
-            const activeLayer = layers[activeLayerIndex];
-            const ctx = activeLayer.ctx;
-            const size = parseFloat(document.getElementById('size').value);
-            const colorObj = getDrawColor();
+            const activeLayer = layers[activeLayerIndex]; const ctx = activeLayer.ctx;
+            const size = parseFloat(document.getElementById('size').value); const colorObj = getDrawColor();
 
             ctx.save();
-            // تفعيل ميزة قفل الشفافية (Alpha Lock) الاحترافية برمجياً
-            if (activeLayer.alphaLock) {
-                ctx.globalCompositeOperation = 'source-atop'; // يرسم فقط فوق البيكسلات الملونة مسبقاً في هذه الطبقة!
-            } else {
-                ctx.globalCompositeOperation = 'source-over';
-            }
-
-            ctx.lineWidth = size;
-            ctx.lineCap = 'round';
-            ctx.lineJoin = 'round';
+            ctx.globalCompositeOperation = activeLayer.alphaLock ? 'source-atop' : 'source-over';
+            ctx.lineWidth = size; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
 
             if (currentTool === 'eraser') {
-                // الممحاة في الطبقات العليا تقوم بمسح البيكسلات وجعلها شفافة تماماً
                 ctx.globalCompositeOperation = activeLayerIndex === 0 ? 'source-over' : 'destination-out';
                 ctx.strokeStyle = activeLayerIndex === 0 ? "#ffffff" : "rgba(0,0,0,1)";
                 ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.quadraticCurveTo(p1.x, p1.y, xc, yc); ctx.stroke();
             } else if (currentTool === 'draw') {
                 ctx.strokeStyle = colorObj.string;
 
-                if (currentBrush === 'pen') {
-                    ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.quadraticCurveTo(p1.x, p1.y, xc, yc); ctx.stroke();
-                } 
-                else if (currentBrush === 'brush') {
-                    ctx.strokeStyle = `rgba(${colorObj.r},${colorObj.g},${colorObj.b},${colorObj.a * 0.15})`;
-                    for(let j = 1; j <= 5; j++) {
-                        ctx.lineWidth = size * (1 + j * 0.2);
+                switch(currentBrush) {
+                    case 'g-pen': // حبر جاف دقيق ومستقر
                         ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.quadraticCurveTo(p1.x, p1.y, xc, yc); ctx.stroke();
-                    }
-                } 
-                else if (currentBrush === 'hair') {
-                    const dx = p1.x - p0.x; const dy = p1.y - p0.y;
-                    const angle = Math.atan2(dy, dx) + Math.PI / 2;
-                    const density = Math.min(12, Math.max(4, size / 3)); 
-                    ctx.strokeStyle = `rgba(${colorObj.r},${colorObj.g},${colorObj.b},${colorObj.a * 0.5})`;
-                    ctx.lineWidth = 1.1;
-
-                    for (let j = -size / 2; j < size / 2; j += size / density) {
-                        const offsetX = Math.cos(angle) * j; const offsetY = Math.sin(angle) * j;
-                        ctx.beginPath();
-                        ctx.moveTo(p0.x + offsetX, p0.y + offsetY);
-                        ctx.quadraticCurveTo(p1.x + offsetX, p1.y + offsetY, xc + offsetX, yc + offsetY);
-                        ctx.stroke();
-                    }
-                } 
-                else if (currentBrush === 'fabric') {
-                    ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.quadraticCurveTo(p1.x, p1.y, xc, yc); ctx.stroke();
-                    ctx.strokeStyle = `rgba(255,255,255,${colorObj.a * 0.3})`; ctx.lineWidth = 1;
-                    for (let k = 0; k < Math.floor(size / 3); k++) {
-                        const offset = (Math.random() - 0.5) * size;
-                        ctx.beginPath(); ctx.moveTo(p0.x + offset, p0.y - offset); ctx.lineTo(xc + offset, yc - offset); ctx.stroke();
-                    }
+                        break;
+                    case 'digital-pen': // قلم رقمي مصمت
+                        ctx.strokeStyle = `rgba(${colorObj.r},${colorObj.g},${colorObj.b},1)`;
+                        ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.quadraticCurveTo(p1.x, p1.y, xc, yc); ctx.stroke();
+                        break;
+                    case 'pencil-hb': // ملمس قلم رصاص جرافيت خفيف
+                        ctx.strokeStyle = `rgba(${colorObj.r},${colorObj.g},${colorObj.b},0.3)`;
+                        ctx.lineWidth = size * 0.7;
+                        ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.quadraticCurveTo(p1.x, p1.y, xc, yc); ctx.stroke();
+                        // بكسلات الجرافيت العشوائية محاكاة للورق
+                        for (let j = 0; j < 5; j++) { ctx.fillStyle = colorObj.string; ctx.fillRect(xc + (Math.random()-0.5)*size, yc + (Math.random()-0.5)*size, 1.2, 1.2); }
+                        break;
+                    case 'airbrush': // رذاذ بخاخ متدرج الحواف ناعم
+                        ctx.strokeStyle = `rgba(${colorObj.r},${colorObj.g},${colorObj.b},${colorObj.a * 0.1})`;
+                        for(let j = 1; j <= 6; j++) { ctx.lineWidth = size * (1 + j * 0.25); ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.quadraticCurveTo(p1.x, p1.y, xc, yc); ctx.stroke(); }
+                        break;
+                    case 'pro-hair': // الفرشاة الاحترافية لخصلات الشعر الحقيقي (خوارزمية الإحداثيات المنحنية المتوازية)
+                        const dx = p1.x - p0.x; const dy = p1.y - p0.y;
+                        const angle = Math.atan2(dy, dx) + Math.PI / 2;
+                        ctx.lineWidth = 0.8; // خصلات شعر بالغة النحومة والدقة لشعر حقيقي
+                        ctx.strokeStyle = `rgba(${colorObj.r},${colorObj.g},${colorObj.b},${colorObj.a * 0.75})`;
+                        const hairStrands = Math.max(5, size / 2);
+                        for (let j = -size / 2; j < size / 2; j += size / hairStrands) {
+                            const offsetX = Math.cos(angle) * j; const offsetY = Math.sin(angle) * j;
+                            ctx.beginPath(); ctx.moveTo(p0.x + offsetX, p0.y + offsetY); ctx.quadraticCurveTo(p1.x + offsetX, p1.y + offsetY, xc + offsetX, yc + offsetY); ctx.stroke();
+                        }
+                        break;
+                    case 'watercolor': // ألوان مائية ممتصة ناعمة الحواف
+                        ctx.strokeStyle = `rgba(${colorObj.r},${colorObj.g},${colorObj.b},${colorObj.a * 0.15})`;
+                        ctx.shadowBlur = size / 2; ctx.shadowColor = colorObj.string;
+                        ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.quadraticCurveTo(p1.x, p1.y, xc, yc); ctx.stroke();
+                        break;
+                    case 'oil-brush': // تراكب زيتي سميك وكثيف
+                        ctx.strokeStyle = `rgba(${colorObj.r},${colorObj.g},${colorObj.b},0.85)`;
+                        ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.quadraticCurveTo(p1.x, p1.y, xc, yc); ctx.stroke();
+                        ctx.strokeStyle = `rgba(255,255,255,0.15)`; ctx.lineWidth = size * 0.6;
+                        ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.stroke();
+                        break;
+                    case 'linen-fabric': // تأثير ألياف الكتان والقماش
+                        ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.quadraticCurveTo(p1.x, p1.y, xc, yc); ctx.stroke();
+                        ctx.strokeStyle = `rgba(255,255,255,${colorObj.a * 0.4})`; ctx.lineWidth = 1;
+                        for (let k = 0; k < Math.floor(size/3); k++) { const offset = (Math.random()-0.5)*size; ctx.beginPath(); ctx.moveTo(p0.x+offset, p0.y-offset); ctx.lineTo(xc+offset, yc-offset); ctx.stroke(); }
+                        break;
+                    case 'fur-texture': // فرشاة ملمس الفرو الناعم
+                        const fdx = p1.x - p0.x; const fdy = p1.y - p0.y;
+                        const fAngle = Math.atan2(fdy, fdx) + Math.PI / 4;
+                        ctx.lineWidth = 1; ctx.strokeStyle = `rgba(${colorObj.r},${colorObj.g},${colorObj.b},0.6)`;
+                        for(let k=0; k<size; k+=4) { ctx.beginPath(); ctx.moveTo(xc, yc); ctx.lineTo(xc + Math.cos(fAngle)*size, yc + Math.sin(fAngle)*size); ctx.stroke(); }
+                        break;
+                    case 'charcoal': // فحم خشن
+                        ctx.strokeStyle = colorObj.string; ctx.lineWidth = size;
+                        ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.quadraticCurveTo(p1.x, p1.y, xc, yc); ctx.stroke();
+                        ctx.fillStyle = "#000000"; for(let k=0; k<15; k++) { ctx.fillRect(xc+(Math.random()-0.5)*size, yc+(Math.random()-0.5)*size, 1.5, 1.5); }
+                        break;
+                    case 'gouache': // طلاء جواش معتم
+                        ctx.strokeStyle = `rgba(${colorObj.r},${colorObj.g},${colorObj.b},0.92)`;
+                        ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.quadraticCurveTo(p1.x, p1.y, xc, yc); ctx.stroke();
+                        break;
+                    case 'sparkle': // جزيئات النجوم المضيئة المبعثرة
+                        ctx.fillStyle = `hsl(${Math.random()*360}, 100%, 75%)`;
+                        for(let s=0; s<3; s++) { const sx = xc+(Math.random()-0.5)*size*2; const sy = yc+(Math.random()-0.5)*size*2; ctx.fillRect(sx, sy, 3, 3); ctx.fillRect(sx-2, sy-2, 7, 1); }
+                        break;
+                    case 'splatter': // بقع طلاء حبرية متناثرة
+                        ctx.fillStyle = colorObj.string;
+                        ctx.beginPath(); ctx.arc(xc, yc, size/4, 0, Math.PI*2); ctx.fill();
+                        for(let b=0; b<5; b++) { ctx.beginPath(); ctx.arc(xc+(Math.random()-0.5)*size*1.5, yc+(Math.random()-0.5)*size*1.5, Math.random()*2, 0, Math.PI*2); ctx.fill(); }
+                        break;
+                    case 'shading-mesh': // تظليل كوميك شبكي
+                        ctx.beginPath(); ctx.moveTo(p0.x, p0.y); ctx.quadraticCurveTo(p1.x, p1.y, xc, yc); ctx.stroke();
+                        if(Math.floor(xc)%6 === 0) { ctx.strokeStyle = `rgba(0,0,0,0.5)`; ctx.lineWidth=1; ctx.beginPath(); ctx.moveTo(xc-size, yc-size); ctx.lineTo(xc+size, yc+size); ctx.stroke(); }
+                        break;
+                    case 'concrete-wall': // جدار خرساني خشن
+                        ctx.fillStyle = `rgba(100,100,100,0.15)`;
+                        for(let c=0; c<8; c++) { ctx.fillRect(xc+(Math.random()-0.5)*size, yc+(Math.random()-0.5)*size, Math.random()*4, Math.random()*4); }
+                        break;
                 }
             }
             ctx.restore();
         }
 
-        // معالجة حركة الرسم بالاعتماد على ميزة الـ Stabilizer (خوارزمية المتوسط المتحرك للتنعيم)
         function getStabilizedPoint(nextPoint) {
             const strength = parseInt(document.getElementById('stabilizer').value);
             if (strokePoints.length === 0) return nextPoint;
-
-            // حساب النقطة بناءً على ثقل وعمق التثبيت المختار
             const lastPoint = strokePoints[strokePoints.length - 1];
-            return {
-                x: lastPoint.x + (nextPoint.x - lastPoint.x) / (strength + 1),
-                y: lastPoint.y + (nextPoint.y - lastPoint.y) / (strength + 1)
-            };
+            return { x: lastPoint.x + (nextPoint.x - lastPoint.x) / (strength + 1), y: lastPoint.y + (nextPoint.y - lastPoint.y) / (strength + 1) };
         }
 
         function startStroke(e) {
             const pos = getCoordinates(e);
             if (currentTool === 'bucket') {
-                const hex = document.getElementById('color').value;
-                const rgb = [parseInt(hex.slice(1,3),16), parseInt(hex.slice(3,5),16), parseInt(hex.slice(5,7),16)];
-                // دمج نظام الدلو على الطبقة الحالية
+                saveState();
+                const rgb = [parseInt(currentColorHex.slice(1,3),16), parseInt(currentColorHex.slice(3,5),16), parseInt(currentColorHex.slice(5,7),16)];
                 floodFillEngine(Math.floor(pos.x), Math.floor(pos.y), rgb);
                 return;
             }
             painting = true;
+            saveState(); // حفظ خطوة التراجع بمجرد ضغط الإصبع للبدء
             const stabilized = getStabilizedPoint(pos);
             strokePoints = [stabilized];
         }
 
         function stopStroke() { painting = false; strokePoints = []; }
-        
         function moveStroke(e) {
             if (!painting || currentTool === 'bucket') return;
-            const rawPos = getCoordinates(e);
-            const stabilizedPos = getStabilizedPoint(rawPos);
-            
+            const rawPos = getCoordinates(e); const stabilizedPos = getStabilizedPoint(rawPos);
             strokePoints.push(stabilizedPos);
-
             if (strokePoints.length >= 3) {
                 const i = strokePoints.length - 2;
-                const xc = (strokePoints[i].x + strokePoints[i + 1].x) / 2;
-                const yc = (strokePoints[i].y + strokePoints[i + 1].y) / 2;
+                const xc = (strokePoints[i].x + strokePoints[i + 1].x) / 2; const yc = (strokePoints[i].y + strokePoints[i + 1].y) / 2;
                 runDrawingEngine(strokePoints[i - 1], strokePoints[i], xc, yc);
             }
         }
 
         function getCoordinates(e) {
-            const activeCanvas = layers[activeLayerIndex].canvas;
-            const rect = activeCanvas.getBoundingClientRect();
-            let clientX = e.touches ? e.touches[0].clientX : e.clientX;
-            let clientY = e.touches ? e.touches[0].clientY : e.clientY;
+            const activeCanvas = layers[activeLayerIndex].canvas; const rect = activeCanvas.getBoundingClientRect();
+            let clientX = e.touches ? e.touches[0].clientX : e.clientX; let clientY = e.touches ? e.touches[0].clientY : e.clientY;
             return { x: clientX - rect.left, y: clientY - rect.top };
         }
 
-        // نظام تعبئة المساحات الذكي (Flood Fill) المدمج بالطبقة
         function floodFillEngine(startX, startY, fillRGB) {
-            const ctx = layers[activeLayerIndex].ctx;
-            const imageData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
-            const data = imageData.data;
-            const targetIdx = (startY * canvasWidth + startX) * 4;
-            const targetColor = [data[targetIdx], data[targetIdx+1], data[targetIdx+2], data[targetIdx+3]];
-            
+            const ctx = layers[activeLayerIndex].ctx; const imageData = ctx.getImageData(0, 0, canvasWidth, canvasHeight); const data = imageData.data;
+            const targetIdx = (startY * canvasWidth + startX) * 4; const targetColor = [data[targetIdx], data[targetIdx+1], data[targetIdx+2], data[targetIdx+3]];
             if (targetColor[0] === fillRGB[0] && targetColor[1] === fillRGB[1] && targetColor[2] === fillRGB[2]) return;
-
             const queue = [[startX, startY]];
             while (queue.length > 0) {
-                const [x, y] = queue.shift();
-                const idx = (y * canvasWidth + x) * 4;
-
+                const [x, y] = queue.shift(); const idx = (y * canvasWidth + x) * 4;
                 if (data[idx] === targetColor[0] && data[idx+1] === targetColor[1] && data[idx+2] === targetColor[2]) {
                     data[idx] = fillRGB[0]; data[idx+1] = fillRGB[1]; data[idx+2] = fillRGB[2]; data[idx+3] = 255;
-
-                    if (x > 0) queue.push([x - 1, y]);
-                    if (x < canvasWidth - 1) queue.push([x + 1, y]);
-                    if (y > 0) queue.push([x, y - 1]);
-                    if (y < canvasHeight - 1) queue.push([x, y + 1]);
+                    if (x > 0) queue.push([x - 1, y]); if (x < canvasWidth - 1) queue.push([x + 1, y]); if (y > 0) queue.push([x, y - 1]); if (y < canvasHeight - 1) queue.push([x, y + 1]);
                 }
             }
             ctx.putImageData(imageData, 0, 0);
         }
 
-        // إدارة لوحات التحكم المنبثقة التفاعلية السفلية
         function closeAllPanels() {
             document.getElementById('brushPanel').classList.remove('show');
             document.getElementById('layersPanel').classList.remove('show');
+            document.getElementById('colorPanel').classList.remove('show');
         }
 
-        document.getElementById('toggle-brush-panel').addEventListener('click', (e) => {
-            e.stopPropagation(); const p = document.getElementById('brushPanel');
-            const state = p.classList.contains('show'); closeAllPanels(); if(!state) p.classList.add('show');
-        });
-
-        document.getElementById('toggle-layers-panel').addEventListener('click', (e) => {
-            e.stopPropagation(); const p = document.getElementById('layersPanel');
-            const state = p.classList.contains('show'); closeAllPanels(); if(!state) p.classList.add('show');
-        });
-
+        document.getElementById('toggle-brush-panel').addEventListener('click', (e) => { e.stopPropagation(); const p = document.getElementById('brushPanel'); const state = p.classList.contains('show'); closeAllPanels(); if(!state) p.classList.add('show'); });
+        document.getElementById('toggle-layers-panel').addEventListener('click', (e) => { e.stopPropagation(); const p = document.getElementById('layersPanel'); const state = p.classList.contains('show'); closeAllPanels(); if(!state) p.classList.add('show'); });
+        document.getElementById('toggle-color-panel').addEventListener('click', (e) => { e.stopPropagation(); const p = document.getElementById('colorPanel'); const state = p.classList.contains('show'); closeAllPanels(); if(!state) p.classList.add('show'); });
         document.querySelector('.workspace').addEventListener('click', () => closeAllPanels());
 
-        // إدارة إضافة وحذف الطبقات عبر الأزرار الفخمة
-        document.getElementById('add-layer').addEventListener('click', () => {
-            if(layers.length < 10) { createLayer(); } else { alert('تم الوصول للحد الأقصى للطبقات حالياً!'); }
-        });
-
+        document.getElementById('add-layer').addEventListener('click', () => { if(layers.length < 10) createLayer(); });
         document.getElementById('delete-layer').addEventListener('click', () => {
-            if (layers.length > 1) {
-                container.removeChild(layers[activeLayerIndex].canvas);
-                layers.splice(activeLayerIndex, 1);
-                activeLayerIndex = layers.length - 1;
-                // إعادة ترتيب الـ zIndex للطبقات المتبقية بدقة
-                layers.forEach((l, idx) => l.canvas.style.zIndex = idx);
-                renderLayersUI();
-                updateActiveCanvasListeners();
-            } else {
-                alert('لا يمكن حذف الطبقة الأساسية الأخيرة!');
-            }
+            if (layers.length > 1) { container.removeChild(layers[activeLayerIndex].canvas); layers.splice(activeLayerIndex, 1); activeLayerIndex = layers.length - 1; layers.forEach((l, idx) => l.canvas.style.zIndex = idx); renderLayersUI(); updateActiveCanvasListeners(); updateUndoRedoButtonsState(); }
         });
 
         const mainTools = document.querySelectorAll('[data-main-tool]');
-        mainTools.forEach(btn => {
-            btn.addEventListener('click', () => {
-                mainTools.forEach(b => b.classList.remove('active')); btn.classList.add('active');
-                currentTool = btn.getAttribute('data-main-tool'); closeAllPanels();
-            });
-        });
+        mainTools.forEach(btn => { btn.addEventListener('click', () => { mainTools.forEach(b => b.classList.remove('active')); btn.classList.add('active'); currentTool = btn.getAttribute('data-main-tool'); closeAllPanels(); }); });
 
-        const brushOptions = document.querySelectorAll('[data-brush]');
-        brushOptions.forEach(opt => {
-            opt.addEventListener('click', () => {
-                brushOptions.forEach(o => o.classList.remove('selected')); opt.classList.add('selected');
-                currentBrush = opt.getAttribute('data-brush');
-            });
-        });
+        document.getElementById('clear').addEventListener('click', () => { saveState(); const ctx = layers[activeLayerIndex].ctx; if(activeLayerIndex === 0) { ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, canvasWidth, canvasHeight); } else { ctx.clearRect(0, 0, canvasWidth, canvasHeight); } });
 
-        document.getElementById('clear').addEventListener('click', () => {
-            const ctx = layers[activeLayerIndex].ctx;
-            if(activeLayerIndex === 0) {
-                ctx.fillStyle = "#ffffff"; ctx.fillRect(0, 0, canvasWidth, canvasHeight);
-            } else {
-                ctx.clearRect(0, 0, canvasWidth, canvasHeight);
-            }
-        });
-
-        // تشغيل المحرك والطبقة الأولى تلقائياً عند الإقلاع
+        // تهيئة الإقلاع
         createLayer();
+        buildBrushesListUI();
+        drawColorWheel();
+        document.getElementById('colorPreview').style.background = currentColorHex;
     </script>
 </body>
 </html>
