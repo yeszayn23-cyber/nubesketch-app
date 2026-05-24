@@ -2,105 +2,130 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>Professional Paint Engine</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>إستوديو الرسم الاحترافي اللمسي</title>
     <style>
-        :root { --panel: #1e1e1e; --border: #333; --accent: #007acc; }
-        body { margin: 0; display: flex; height: 100vh; background: #121212; color: #ddd; font-family: sans-serif; }
-        
-        /* شريط الأدوات الرئيسي (دقة متناهية) */
-        #toolbar { width: 60px; background: var(--panel); border-left: 1px solid var(--border); display: flex; flex-direction: column; gap: 10px; align-items: center; padding-top: 10px; }
-        .icon { width: 40px; height: 40px; background: #2a2a2a; border-radius: 4px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: 0.2s; }
-        .icon:hover { background: var(--accent); }
-
-        /* منطقة الرسم */
-        #canvas-area { flex: 1; position: relative; overflow: hidden; display: flex; align-items: center; justify-content: center; }
-        canvas { background: white; box-shadow: 0 0 20px rgba(0,0,0,0.5); }
-
-        /* اللوحة اليمنى (المكتبة) */
-        #right-sidebar { width: 300px; background: var(--panel); border-right: 1px solid var(--border); display: flex; flex-direction: column; }
-        .tab-content { padding: 15px; display: none; }
-        .tab-content.active { display: block; }
-        
-        /* تفاصيل الفرش المتقدمة */
-        .brush-preview { width: 100%; height: 60px; background: #2a2a2a; margin-bottom: 10px; cursor: pointer; border: 1px solid var(--border); display: flex; align-items: center; padding: 0 10px; }
-        
-        /* منزلقات التحكم (RGB و Opacity) */
-        input[type="range"] { width: 100%; accent-color: var(--accent); margin: 10px 0; }
+        /* (تم الاحتفاظ بنفس التنسيقات السابقة للحفاظ على الشكل الجمالي) */
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: system-ui, -apple-system, sans-serif; user-select: none; -webkit-user-select: none; }
+        body { background: #1e1e24; color: #ffffff; display: flex; flex-direction: column; height: 100vh; overflow: hidden; }
+        .top-bar { height: 50px; background: #141419; display: flex; justify-content: space-between; align-items: center; padding: 0 16px; border-bottom: 1px solid #2d2d35; z-index: 100; }
+        .workspace { flex: 1; position: relative; background: #3a3a42; overflow: hidden; display: flex; justify-content: center; align-items: center; touch-action: none; }
+        .canvas-transform-viewport { position: absolute; transform-origin: center center; display: flex; justify-content: center; align-items: center; pointer-events: none; }
+        .canvas-container { position: relative; background: #ffffff; box-shadow: 0 10px 30px rgba(0,0,0,0.5); pointer-events: auto; }
+        .canvas-container canvas { position: absolute; top: 0; left: 0; display: block; width: 100%; height: 100%; }
+        .bottom-bar { height: 60px; background: #141419; border-top: 1px solid #2d2d35; display: flex; justify-content: space-around; align-items: center; z-index: 110; }
+        .sliders-overlay { position: absolute; bottom: 80px; right: 16px; left: 80px; display: flex; flex-direction: column; gap: 8px; z-index: 95; background: rgba(20,20,25,0.8); padding: 8px 12px; border-radius: 10px; backdrop-filter: blur(5px); border: 1px solid #2d2d35; }
+        .slider-item { display: flex; align-items: center; gap: 10px; }
+        .slider-item input { flex: 1; accent-color: #38bdf8; }
+        .tools-popup-panel { position: absolute; bottom: 80px; left: 16px; background: rgba(30, 30, 36, 0.95); backdrop-filter: blur(10px); border: 1px solid #4a4a5a; border-radius: 14px; width: 140px; display: none; flex-direction: column; padding: 6px; z-index: 150; }
+        .tools-popup-panel.show { display: flex; }
+        .tool-row { display: flex; align-items: center; gap: 12px; padding: 10px; color: white; border: none; background: none; cursor: pointer; }
+        .tool-row.active { color: #38bdf8; }
+        .icon-btn { background: #141419; border: 1px solid #2d2d35; color: #ffffff; width: 36px; height: 36px; border-radius: 8px; cursor: pointer; }
     </style>
 </head>
 <body>
 
-<div id="toolbar">
-    <div class="icon" onclick="setTool('brush')">🖌️</div>
-    <div class="icon" onclick="setTool('eraser')">🧽</div>
-    <div class="icon" onclick="setTool('smudge')">👈</div>
-</div>
-
-<div id="canvas-area">
-    <canvas id="mainCanvas" width="800" height="600"></canvas>
-</div>
-
-<div id="right-sidebar">
-    <div style="display: flex;">
-        <button onclick="openTab('brushes')">الفرش</button>
-        <button onclick="openTab('colors')">الألوان</button>
-        <button onclick="openTab('layers')">الطبقات</button>
-    </div>
-    
-    <div id="brushes" class="tab-content active">
-        <div class="brush-preview" onclick="selectBrush('watercolor')">مائي (Water Paint)</div>
-        <div class="brush-preview" onclick="selectBrush('charcoal')">فحم (Charcoal)</div>
-        <div class="brush-preview" onclick="selectBrush('hair')">شعر (Hair)</div>
+    <div class="top-bar">
+        <div class="brand">إستوديو <span>الرسم المحترف</span></div>
+        <div class="top-actions">
+            <button class="icon-btn" id="undoBtn">تراجع</button>
+            <button class="icon-btn" id="clearBtn">مسح</button>
+        </div>
     </div>
 
-    <div id="colors" class="tab-content">
-        <label>RGB Controls</label>
-        <input type="range" id="red" max="255">
-        <input type="range" id="green" max="255">
-        <input type="range" id="blue" max="255">
-        <div id="colorPreview" style="height: 40px; background: black;"></div>
+    <div class="workspace" id="workspace">
+        <div class="canvas-transform-viewport" id="transformViewport">
+            <div class="canvas-container" id="canvasContainer">
+                <canvas id="paintCanvas"></canvas>
+            </div>
+        </div>
+        <div class="sliders-overlay">
+            <div class="slider-item"><span>الحجم</span><input type="range" id="brushSize" min="2" max="100" value="10"></div>
+            <div class="slider-item"><span>العتامة</span><input type="range" id="brushOpacity" min="1" max="100" value="100"></div>
+        </div>
+        <div class="tools-popup-panel" id="toolsPopup">
+            <button class="tool-row active" data-tool="brush">فرشاة</button>
+            <button class="tool-row" data-tool="eraser">ممحاة</button>
+        </div>
     </div>
-</div>
 
-<script>
-    const canvas = document.getElementById('mainCanvas');
-    const ctx = canvas.getContext('2d');
-    let currentTool = 'brush';
-    let currentBrush = 'watercolor';
-    let isDrawing = false;
+    <div class="bottom-bar">
+        <button class="bottom-btn" id="toggleToolsBtn">الأدوات</button>
+    </div>
 
-    // دالة محرك الرسم المتطور
-    function draw(e) {
-        if (!isDrawing) return;
-        ctx.lineWidth = 15;
-        ctx.lineCap = 'round';
+    <script>
+        const canvas = document.getElementById('paintCanvas');
+        const ctx = canvas.getContext('2d', { willReadFrequently: true });
+        const workspace = document.getElementById('workspace');
         
-        // هنا يتم دمج المنطق الخاص بنوع الفرشاة (مائي/فحم/شعر)
-        if (currentBrush === 'watercolor') {
-            ctx.globalAlpha = 0.1; // شفافية للمزج المائي
-            ctx.strokeStyle = `rgb(${document.getElementById('red').value}, ${document.getElementById('green').value}, ${document.getElementById('blue').value})`;
-        } else if (currentBrush === 'charcoal') {
-            ctx.globalCompositeOperation = 'source-over';
-            ctx.globalAlpha = 1;
+        let isPainting = false;
+        let points = [];
+        let activeTool = 'brush';
+        let selectedColor = '#38bdf8';
+
+        // تهيئة الكانفاس
+        canvas.width = 1600; canvas.height = 1600;
+        canvas.style.width = '800px'; canvas.style.height = '800px';
+        ctx.scale(2, 2);
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, 800, 800);
+
+        // --- محرك الفرشاة الاحترافية الجديد ---
+        function drawStamp(x, y) {
+            const size = document.getElementById('brushSize').value;
+            const opacity = document.getElementById('brushOpacity').value / 100;
+            
+            ctx.save();
+            ctx.globalAlpha = opacity;
+            ctx.globalCompositeOperation = (activeTool === 'eraser') ? 'destination-out' : 'source-over';
+            
+            // فرشاة ذات حواف ناعمة
+            const grad = ctx.createRadialGradient(x, y, 0, x, y, size / 2);
+            grad.addColorStop(0, selectedColor);
+            grad.addColorStop(1, 'transparent');
+            
+            ctx.beginPath();
+            ctx.fillStyle = grad;
+            ctx.arc(x, y, size / 2, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.restore();
         }
-        
-        ctx.lineTo(e.offsetX, e.offsetY);
-        ctx.stroke();
-        ctx.beginPath();
-        ctx.moveTo(e.offsetX, e.offsetY);
-    }
 
-    canvas.addEventListener('mousedown', (e) => { isDrawing = true; ctx.beginPath(); });
-    canvas.addEventListener('mouseup', () => { isDrawing = false; });
-    canvas.addEventListener('mousemove', draw);
+        function handlePaintMove(clientX, clientY) {
+            if (!isPainting) return;
+            const rect = canvas.getBoundingClientRect();
+            const x = (clientX - rect.left) * (800 / rect.width);
+            const y = (clientY - rect.top) * (800 / rect.height);
+            
+            const prev = points[points.length - 1];
+            const dist = Math.hypot(x - prev.x, y - prev.y);
+            const steps = Math.ceil(dist / 2);
 
-    function openTab(id) {
-        document.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
-        document.getElementById(id).style.display = 'block';
-    }
-    
-    function selectBrush(type) { currentBrush = type; }
-</script>
+            for (let i = 0; i < steps; i++) {
+                const t = i / steps;
+                drawStamp(prev.x + (x - prev.x) * t, prev.y + (y - prev.y) * t);
+            }
+            points.push({x, y});
+        }
 
+        workspace.addEventListener('touchstart', (e) => {
+            if(e.touches.length === 1) {
+                isPainting = true;
+                const rect = canvas.getBoundingClientRect();
+                points = [{x: (e.touches[0].clientX - rect.left) * (800 / rect.width), y: (e.touches[0].clientY - rect.top) * (800 / rect.height)}];
+            }
+        });
+
+        workspace.addEventListener('touchmove', (e) => {
+            if(isPainting) handlePaintMove(e.touches[0].clientX, e.touches[0].clientY);
+        });
+
+        workspace.addEventListener('touchend', () => { isPainting = false; });
+
+        document.getElementById('toggleToolsBtn').onclick = () => document.getElementById('toolsPopup').classList.toggle('show');
+        document.querySelectorAll('.tool-row').forEach(btn => btn.onclick = () => activeTool = btn.dataset.tool);
+
+    </script>
 </body>
 </html>
