@@ -1,0 +1,494 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>NubeSketch</title>
+<!-- Telegram Mini App SDK -->
+<script src="https://telegram.org/js/telegram-web-app.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --accent: #7F77DD;
+    --accent-light: #EEEDFE;
+    --bg: #ffffff;
+    --bg2: #f5f5f5;
+    --text: #1a1a1a;
+    --muted: #888;
+    --border: 0.5px solid rgba(0,0,0,0.12);
+    --radius: 12px;
+    --radius-sm: 8px;
+  }
+  html, body {
+    height: 100%;
+    background: var(--tg-theme-bg-color, var(--bg));
+    color: var(--tg-theme-text-color, var(--text));
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+    overflow: hidden;
+  }
+  .app {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    max-width: 480px;
+    margin: 0 auto;
+  }
+  .screen { flex: 1; overflow-y: auto; overflow-x: hidden; display: none; flex-direction: column; }
+  .screen.active { display: flex; }
+  .header {
+    padding: 12px 16px 8px;
+    display: flex; align-items: center; justify-content: space-between;
+    border-bottom: var(--border);
+    position: sticky; top: 0;
+    background: var(--tg-theme-bg-color, var(--bg));
+    z-index: 10;
+  }
+  .logo { font-size: 20px; font-weight: 700; color: var(--accent); letter-spacing: -0.5px; }
+  .header-icons { display: flex; gap: 14px; }
+  .header-icons svg { width: 22px; height: 22px; stroke: var(--muted); fill: none; stroke-width: 1.8; cursor: pointer; }
+
+  /* NAV */
+  .nav {
+    display: flex;
+    border-top: var(--border);
+    background: var(--tg-theme-bg-color, var(--bg));
+    padding-bottom: env(safe-area-inset-bottom, 0);
+  }
+  .nav-btn {
+    flex: 1; padding: 10px 0;
+    display: flex; flex-direction: column; align-items: center; gap: 3px;
+    cursor: pointer; border: none; background: none;
+    color: var(--muted); font-size: 10px;
+  }
+  .nav-btn svg { width: 22px; height: 22px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+  .nav-btn.active { color: var(--accent); }
+  .nav-btn.center svg { width: 28px; height: 28px; }
+
+  /* STORIES */
+  .stories { display: flex; gap: 10px; padding: 12px 16px; overflow-x: auto; scrollbar-width: none; }
+  .stories::-webkit-scrollbar { display: none; }
+  .story { display: flex; flex-direction: column; align-items: center; gap: 4px; flex-shrink: 0; cursor: pointer; }
+  .story-ring {
+    width: 54px; height: 54px; border-radius: 50%;
+    background: linear-gradient(135deg, #7F77DD, #f0a500);
+    padding: 2px; display: flex; align-items: center; justify-content: center;
+  }
+  .story-avatar {
+    width: 48px; height: 48px; border-radius: 50%;
+    background: var(--tg-theme-bg-color, #fff);
+    border: 2px solid var(--tg-theme-bg-color, #fff);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 18px; font-weight: 600; color: var(--accent);
+  }
+  .story span { font-size: 10px; color: var(--muted); max-width: 54px; text-align: center; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .add-story .story-ring { background: var(--bg2); border: var(--border); }
+
+  /* POSTS */
+  .post { border-bottom: var(--border); margin-bottom: 4px; }
+  .post-header { display: flex; align-items: center; gap: 10px; padding: 10px 16px 8px; }
+  .avatar {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: var(--accent-light); display: flex; align-items: center;
+    justify-content: center; font-weight: 600; font-size: 15px; color: var(--accent); flex-shrink: 0;
+  }
+  .post-canvas { width: 100%; aspect-ratio: 1; display: block; }
+  .post-actions { display: flex; align-items: center; gap: 14px; padding: 8px 16px 4px; }
+  .post-actions svg { width: 24px; height: 24px; stroke: var(--text); fill: none; stroke-width: 1.8; cursor: pointer; }
+  .post-actions .liked { stroke: #E24B4A; fill: #E24B4A; }
+  .save { margin-left: auto; }
+  .post-likes { padding: 0 16px 2px; font-size: 13px; font-weight: 600; }
+  .post-caption { padding: 0 16px 4px; font-size: 13px; }
+  .post-caption b { font-weight: 600; }
+  .post-time { padding: 0 16px 10px; font-size: 11px; color: var(--muted); }
+
+  /* EXPLORE */
+  .explore-search { padding: 10px 16px; position: sticky; top: 0; background: var(--tg-theme-bg-color, var(--bg)); z-index: 5; }
+  .search-box { display: flex; align-items: center; gap: 8px; background: var(--bg2); border-radius: var(--radius-sm); padding: 8px 12px; }
+  .search-box input { border: none; background: none; flex: 1; font-size: 14px; color: var(--text); outline: none; }
+  .tag-row { display: flex; gap: 8px; padding: 4px 16px 10px; overflow-x: auto; scrollbar-width: none; }
+  .tag-row::-webkit-scrollbar { display: none; }
+  .tag { padding: 5px 13px; border-radius: 20px; background: var(--bg2); font-size: 12px; color: var(--muted); white-space: nowrap; cursor: pointer; border: var(--border); }
+  .tag.active { background: var(--accent-light); color: var(--accent); border-color: var(--accent); }
+  .grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 2px; }
+  .grid-item { aspect-ratio: 1; background: var(--bg2); cursor: pointer; overflow: hidden; }
+  .grid-item canvas { width: 100%; height: 100%; object-fit: cover; }
+
+  /* DRAW */
+  .draw-area { flex: 1; display: flex; flex-direction: column; min-height: 0; }
+  #draw-canvas { flex: 1; cursor: crosshair; touch-action: none; display: block; width: 100%; }
+  .draw-toolbar {
+    display: flex; align-items: center; gap: 8px; padding: 8px 12px;
+    border-top: var(--border); flex-wrap: wrap; background: var(--tg-theme-bg-color, var(--bg));
+  }
+  .tool-btn {
+    width: 36px; height: 36px; border-radius: var(--radius-sm); border: var(--border);
+    background: none; display: flex; align-items: center; justify-content: center;
+    cursor: pointer; font-size: 18px; color: var(--muted);
+  }
+  .tool-btn.active { background: var(--accent-light); border-color: var(--accent); color: var(--accent); }
+  .tool-btn svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 1.8; }
+  .colors { display: flex; gap: 5px; }
+  .color-dot { width: 22px; height: 22px; border-radius: 50%; cursor: pointer; border: 2px solid transparent; transition: transform 0.1s; }
+  .color-dot.selected { border-color: var(--text); transform: scale(1.15); }
+  .size-sl { width: 70px; accent-color: var(--accent); }
+  .draw-actions { display: flex; gap: 6px; margin-left: auto; }
+  .btn-primary { padding: 7px 16px; border-radius: var(--radius-sm); background: var(--accent); color: #fff; border: none; font-size: 13px; cursor: pointer; font-weight: 600; }
+  .btn-ghost { padding: 7px 12px; border-radius: var(--radius-sm); background: none; border: var(--border); font-size: 13px; cursor: pointer; color: var(--muted); }
+
+  /* PROFILE */
+  .profile-header { display: flex; align-items: flex-start; gap: 16px; padding: 16px; }
+  .profile-avatar { width: 72px; height: 72px; border-radius: 50%; background: var(--accent-light); display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 700; color: var(--accent); flex-shrink: 0; }
+  .profile-stats { display: flex; gap: 24px; padding: 0 16px 16px; border-bottom: var(--border); }
+  .stat { display: flex; flex-direction: column; align-items: center; gap: 2px; }
+  .stat-num { font-size: 17px; font-weight: 700; }
+  .stat-label { font-size: 11px; color: var(--muted); }
+
+  /* NOTIFICATIONS */
+  .notify-item { display: flex; align-items: center; gap: 10px; padding: 12px 16px; border-bottom: var(--border); }
+  .notify-text { flex: 1; font-size: 13px; line-height: 1.4; }
+  .notify-mini { width: 38px; height: 38px; border-radius: var(--radius-sm); background: var(--bg2); overflow: hidden; flex-shrink: 0; }
+</style>
+</head>
+<body>
+<div class="app">
+
+  <!-- FEED -->
+  <div id="screen-feed" class="screen active">
+    <div class="header">
+      <span class="logo">NubeSketch</span>
+      <div class="header-icons">
+        <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+        <svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
+      </div>
+    </div>
+    <div class="stories">
+      <div class="story add-story">
+        <div class="story-ring"><div class="story-avatar" style="font-size:22px">+</div></div>
+        <span>قصتي</span>
+      </div>
+      <div class="story"><div class="story-ring"><div class="story-avatar">أ</div></div><span>أحمد</span></div>
+      <div class="story"><div class="story-ring"><div class="story-avatar">س</div></div><span>سارة</span></div>
+      <div class="story"><div class="story-ring"><div class="story-avatar">م</div></div><span>محمد</span></div>
+      <div class="story"><div class="story-ring"><div class="story-avatar">ل</div></div><span>ليلى</span></div>
+    </div>
+    <div id="feed-posts"></div>
+  </div>
+
+  <!-- EXPLORE -->
+  <div id="screen-explore" class="screen">
+    <div class="explore-search">
+      <div class="search-box">
+        <svg width="16" height="16" viewBox="0 0 24 24" stroke="var(--muted)" fill="none" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+        <input placeholder="ابحث عن رسامين أو أعمال..." />
+      </div>
+    </div>
+    <div class="tag-row">
+      <span class="tag active">الكل</span>
+      <span class="tag">رقمي</span>
+      <span class="tag">تقليدي</span>
+      <span class="tag">مانغا</span>
+      <span class="tag">تجريدي</span>
+      <span class="tag">بورتريه</span>
+    </div>
+    <div class="grid" id="explore-grid"></div>
+  </div>
+
+  <!-- DRAW -->
+  <div id="screen-draw" class="screen">
+    <div class="header">
+      <span style="font-size:15px;font-weight:600">رسم جديد</span>
+      <div class="header-icons">
+        <svg onclick="clearCanvas()" style="cursor:pointer" viewBox="0 0 24 24"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>
+      </div>
+    </div>
+    <div class="draw-area">
+      <canvas id="draw-canvas"></canvas>
+      <div class="draw-toolbar">
+        <button class="tool-btn active" id="tool-pen" onclick="setTool('pen')" title="قلم">
+          <svg viewBox="0 0 24 24"><path d="M12 19l7-7 3 3-7 7-3-3z"/><path d="M18 13l-1.5-7.5L2 2l3.5 14.5L13 18l5-5z"/><path d="M2 2l7.586 7.586"/><circle cx="11" cy="11" r="2"/></svg>
+        </button>
+        <button class="tool-btn" id="tool-brush" onclick="setTool('brush')" title="فرشاة">
+          <svg viewBox="0 0 24 24"><path d="M9.06 11.9l8.07-8.06a2.85 2.85 0 1 1 4.03 4.03l-8.06 8.08"/><path d="M7.07 14.94C5.79 16.2 5 17.95 5 19c0 1.1.9 2 2 2 1.05 0 2.8-.79 4.06-2.07"/></svg>
+        </button>
+        <button class="tool-btn" id="tool-eraser" onclick="setTool('eraser')" title="ممحاة">
+          <svg viewBox="0 0 24 24"><path d="m7 21-4.3-4.3c-1-1-1-2.5 0-3.4l9.6-9.6c1-1 2.5-1 3.4 0l5.6 5.6c1 1 1 2.5 0 3.4L13 21"/><path d="M22 21H7"/><path d="m5 11 9 9"/></svg>
+        </button>
+        <div class="colors">
+          <div class="color-dot selected" style="background:#1a1a1a" data-c="#1a1a1a" onclick="setColor(this)"></div>
+          <div class="color-dot" style="background:#7F77DD" data-c="#7F77DD" onclick="setColor(this)"></div>
+          <div class="color-dot" style="background:#E24B4A" data-c="#E24B4A" onclick="setColor(this)"></div>
+          <div class="color-dot" style="background:#1D9E75" data-c="#1D9E75" onclick="setColor(this)"></div>
+          <div class="color-dot" style="background:#EF9F27" data-c="#EF9F27" onclick="setColor(this)"></div>
+          <div class="color-dot" style="background:#fff;border:1px solid #ccc" data-c="#ffffff" onclick="setColor(this)"></div>
+        </div>
+        <input type="range" class="size-sl" min="1" max="30" value="5" id="sz" oninput="drawSize=+this.value">
+        <div class="draw-actions">
+          <button class="btn-ghost" onclick="clearCanvas()">مسح</button>
+          <button class="btn-primary" onclick="shareDrawing()">نشر ↗</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- PROFILE -->
+  <div id="screen-profile" class="screen">
+    <div class="header">
+      <span style="font-size:15px;font-weight:600">حسابي</span>
+      <div class="header-icons">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+      </div>
+    </div>
+    <div class="profile-header">
+      <div class="profile-avatar">ن</div>
+      <div>
+        <p style="font-size:16px;font-weight:700">nubeuser</p>
+        <p style="font-size:13px;color:var(--muted);margin-top:2px">رسام رقمي • مغرم بالألوان</p>
+        <button class="btn-primary" style="margin-top:10px;font-size:12px;padding:5px 14px">تعديل الملف</button>
+      </div>
+    </div>
+    <div class="profile-stats">
+      <div class="stat"><span class="stat-num" id="my-posts">0</span><span class="stat-label">منشور</span></div>
+      <div class="stat"><span class="stat-num">148</span><span class="stat-label">متابِع</span></div>
+      <div class="stat"><span class="stat-num">92</span><span class="stat-label">متابَع</span></div>
+    </div>
+    <div class="grid" id="profile-grid" style="margin-top:2px"></div>
+  </div>
+
+  <!-- NOTIFICATIONS -->
+  <div id="screen-notify" class="screen">
+    <div class="header"><span style="font-size:15px;font-weight:600">الإشعارات</span></div>
+    <div class="notify-item">
+      <div class="avatar" style="font-size:13px">أح</div>
+      <span class="notify-text"><b>أحمد</b> أعجبه رسمك "غروب الشمس" ❤️<br><span style="color:var(--muted);font-size:11px">منذ 5 دقائق</span></span>
+      <div class="notify-mini"><canvas id="nth1" width="38" height="38"></canvas></div>
+    </div>
+    <div class="notify-item">
+      <div class="avatar" style="background:#EAF3DE;color:#3B6D11;font-size:13px">سا</div>
+      <span class="notify-text"><b>سارة</b> بدأت متابعتك ✨<br><span style="color:var(--muted);font-size:11px">منذ 20 دقيقة</span></span>
+    </div>
+    <div class="notify-item">
+      <div class="avatar" style="background:#FAEEDA;color:#854F0B;font-size:13px">مح</div>
+      <span class="notify-text"><b>محمد</b> علّق: "رائع جداً!" 🎨<br><span style="color:var(--muted);font-size:11px">منذ ساعة</span></span>
+      <div class="notify-mini"><canvas id="nth2" width="38" height="38"></canvas></div>
+    </div>
+  </div>
+
+  <!-- BOTTOM NAV -->
+  <nav class="nav">
+    <button class="nav-btn active" onclick="goto('feed',0)">
+      <svg viewBox="0 0 24 24"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+      <span>الرئيسية</span>
+    </button>
+    <button class="nav-btn" onclick="goto('explore',1)">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+      <span>استكشاف</span>
+    </button>
+    <button class="nav-btn center" onclick="goto('draw',2)">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
+    </button>
+    <button class="nav-btn" onclick="goto('notify',3)">
+      <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <span>إشعارات</span>
+    </button>
+    <button class="nav-btn" onclick="goto('profile',4)">
+      <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      <span>حسابي</span>
+    </button>
+  </nav>
+</div>
+
+<script>
+// ===== Telegram WebApp Init =====
+const tg = window.Telegram?.WebApp;
+if (tg) { tg.ready(); tg.expand(); }
+
+// ===== Palette & Data =====
+const PALETTE = ['#7F77DD','#E24B4A','#1D9E75','#EF9F27','#2481cc','#D4537E','#378ADD'];
+const BGROUNDS = ['#EEEDFE','#E1F5EE','#FAEEDA','#FBEAF0','#E6F1FB','#EAF3DE'];
+const USERS = ['أحمد','سارة','محمد','ليلى','خالد','نور','يوسف','هند'];
+
+let drawColor = '#1a1a1a', drawSize = 5, drawTool = 'pen';
+let isDrawing = false, lastX = 0, lastY = 0;
+let drawCtx, drawCanvas;
+const myDrawings = [];
+
+// ===== Pseudo-random art generator =====
+function rand(seed) { return (Math.sin(seed * 9301 + 49297) * 233280 % 1 + 1) % 1; }
+
+function generateArt(canvas, seed) {
+  const ctx = canvas.getContext('2d');
+  const w = canvas.width, h = canvas.height;
+  ctx.fillStyle = BGROUNDS[seed % BGROUNDS.length];
+  ctx.fillRect(0, 0, w, h);
+  for (let i = 0; i < 7; i++) {
+    const x = rand(seed * 10 + i) * w;
+    const y = rand(seed * 20 + i) * h;
+    const r = 15 + rand(seed * 30 + i) * 60;
+    const g = ctx.createRadialGradient(x, y, 0, x, y, r);
+    const c1 = PALETTE[(seed + i) % PALETTE.length];
+    g.addColorStop(0, c1 + 'bb');
+    g.addColorStop(1, c1 + '11');
+    ctx.beginPath(); ctx.arc(x, y, r, 0, Math.PI * 2);
+    ctx.fillStyle = g; ctx.fill();
+  }
+  for (let i = 0; i < 4; i++) {
+    ctx.beginPath();
+    ctx.moveTo(rand(seed * 40 + i) * w, rand(seed * 50 + i) * h);
+    ctx.bezierCurveTo(
+      rand(seed * 60 + i) * w, rand(seed * 70 + i) * h,
+      rand(seed * 80 + i) * w, rand(seed * 90 + i) * h,
+      rand(seed * 100 + i) * w, rand(seed * 110 + i) * h
+    );
+    ctx.strokeStyle = PALETTE[(seed + i + 2) % PALETTE.length] + '77';
+    ctx.lineWidth = 1.5 + rand(seed * 120 + i) * 4;
+    ctx.stroke();
+  }
+}
+
+// ===== Build Feed =====
+function buildFeed() {
+  const feed = document.getElementById('feed-posts');
+  for (let i = 0; i < 4; i++) {
+    const user = USERS[i % USERS.length];
+    const post = document.createElement('div'); post.className = 'post';
+    const cv = document.createElement('canvas'); cv.width = 480; cv.height = 480; cv.className = 'post-canvas';
+    generateArt(cv, i * 7 + 3);
+    const likes = 10 + Math.floor(rand(i * 3) * 90);
+    post.innerHTML = `
+      <div class="post-header">
+        <div class="avatar">${user[0]}</div>
+        <div><p style="font-size:13px;font-weight:600">${user}</p><p style="font-size:11px;color:var(--muted)">منذ ${i+1} ساعة</p></div>
+        <svg style="margin-right:auto;width:18px;height:18px;stroke:var(--muted);fill:none;stroke-width:2" viewBox="0 0 24 24"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
+      </div>`;
+    post.appendChild(cv);
+    const actions = document.createElement('div'); actions.className = 'post-actions';
+    actions.innerHTML = `
+      <svg onclick="toggleLike(this)" viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+      <svg viewBox="0 0 24 24"><path d="M22 2L11 13"/><path d="M22 2L15 22 11 13 2 9l20-7z"/></svg>
+      <svg class="save" viewBox="0 0 24 24"><path d="m19 21-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>`;
+    post.appendChild(actions);
+    post.innerHTML += `
+      <div class="post-likes" data-n="${likes}">${likes} إعجاب</div>
+      <div class="post-caption"><b>${user}</b> لوحة رقمية 🎨 #رسم #فن_رقمي</div>
+      <div class="post-time">عرض التعليقات</div>`;
+    feed.appendChild(post);
+  }
+}
+
+function toggleLike(el) {
+  el.classList.toggle('liked');
+  const d = el.closest('.post').querySelector('.post-likes');
+  let n = +d.dataset.n + (el.classList.contains('liked') ? 1 : 0);
+  d.textContent = n + ' إعجاب';
+}
+
+// ===== Build Explore =====
+function buildExplore() {
+  const grid = document.getElementById('explore-grid');
+  for (let i = 0; i < 15; i++) {
+    const item = document.createElement('div'); item.className = 'grid-item';
+    const cv = document.createElement('canvas'); cv.width = 160; cv.height = 160;
+    generateArt(cv, i * 5 + 2);
+    item.appendChild(cv); grid.appendChild(item);
+  }
+}
+
+// ===== Draw Screen =====
+function initCanvas() {
+  setTimeout(() => {
+    drawCanvas = document.getElementById('draw-canvas');
+    const area = drawCanvas.parentElement;
+    drawCanvas.width = area.clientWidth;
+    drawCanvas.height = area.clientHeight - 70;
+    drawCtx = drawCanvas.getContext('2d');
+    drawCtx.fillStyle = '#ffffff';
+    drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height);
+    bindDrawEvents();
+  }, 60);
+}
+
+function getPos(e) {
+  const r = drawCanvas.getBoundingClientRect();
+  const src = e.touches ? e.touches[0] : e;
+  return {
+    x: (src.clientX - r.left) * (drawCanvas.width / r.width),
+    y: (src.clientY - r.top) * (drawCanvas.height / r.height)
+  };
+}
+
+function bindDrawEvents() {
+  const cv = drawCanvas;
+  cv.onmousedown = cv.ontouchstart = e => { e.preventDefault(); isDrawing = true; const p = getPos(e); lastX = p.x; lastY = p.y; };
+  cv.onmousemove = cv.ontouchmove = e => {
+    e.preventDefault(); if (!isDrawing) return;
+    const p = getPos(e);
+    drawCtx.beginPath();
+    if (drawTool === 'eraser') { drawCtx.strokeStyle = '#ffffff'; drawCtx.lineWidth = drawSize * 3; }
+    else if (drawTool === 'brush') { drawCtx.strokeStyle = drawColor + '88'; drawCtx.lineWidth = drawSize * 2.5; }
+    else { drawCtx.strokeStyle = drawColor; drawCtx.lineWidth = drawSize; }
+    drawCtx.lineCap = 'round'; drawCtx.lineJoin = 'round';
+    drawCtx.moveTo(lastX, lastY); drawCtx.lineTo(p.x, p.y); drawCtx.stroke();
+    lastX = p.x; lastY = p.y;
+  };
+  cv.onmouseup = cv.onmouseleave = cv.ontouchend = () => { isDrawing = false; };
+}
+
+function setTool(t) {
+  drawTool = t;
+  document.querySelectorAll('.tool-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('tool-' + t).classList.add('active');
+}
+
+function setColor(el) {
+  document.querySelectorAll('.color-dot').forEach(d => d.classList.remove('selected'));
+  el.classList.add('selected'); drawColor = el.dataset.c;
+  if (drawTool === 'eraser') setTool('pen');
+}
+
+function clearCanvas() {
+  if (drawCtx) { drawCtx.fillStyle = '#ffffff'; drawCtx.fillRect(0, 0, drawCanvas.width, drawCanvas.height); }
+}
+
+function shareDrawing() {
+  if (!drawCanvas) return;
+  const mini = document.createElement('canvas'); mini.width = 120; mini.height = 120;
+  mini.getContext('2d').drawImage(drawCanvas, 0, 0, 120, 120);
+  myDrawings.unshift(mini);
+  const pg = document.getElementById('profile-grid');
+  const item = document.createElement('div'); item.className = 'grid-item';
+  item.appendChild(mini); pg.prepend(item);
+  document.getElementById('my-posts').textContent = myDrawings.length;
+  if (tg) tg.showPopup({ title: 'تم النشر ✅', message: 'تم نشر رسمك بنجاح!' });
+  else alert('✅ تم نشر رسمك!');
+  goto('feed', 0);
+}
+
+// ===== Navigation =====
+function goto(screen, idx) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById('screen-' + screen).classList.add('active');
+  document.querySelectorAll('.nav-btn').forEach((b, i) => b.classList.toggle('active', i === idx));
+  if (screen === 'draw') initCanvas();
+}
+
+// ===== Notification thumbnails =====
+function buildNotifThumbs() {
+  ['nth1', 'nth2'].forEach((id, i) => {
+    const cv = document.getElementById(id);
+    if (cv) generateArt(cv, i * 11 + 5);
+  });
+}
+
+// ===== Tag filter =====
+document.querySelectorAll('.tag').forEach(t => {
+  t.onclick = () => { document.querySelectorAll('.tag').forEach(x => x.classList.remove('active')); t.classList.add('active'); };
+});
+
+// ===== Init =====
+buildFeed();
+buildExplore();
+buildNotifThumbs();
+</script>
+</body>
+</html>
