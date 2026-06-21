@@ -2,95 +2,83 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <title>أسماء الله الحسنى</title>
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=El+Messiri:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --main-gold: #c5a059; --bg-cream: #f5e6d3; --text-brown: #4e342e; }
+        :root { --gold: #b8860b; --cream: #fdf5e6; --brown: #5d4037; }
         body { 
-            background-color: var(--bg-cream); 
-            background-size: cover; 
-            background-position: center; 
-            height: 100vh; margin: 0; display: flex; justify-content: center; align-items: center; 
-            font-family: 'Traditional Arabic', serif; color: var(--text-brown);
+            background-color: var(--cream);
+            font-family: 'Amiri', serif; 
+            margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh;
         }
-        .card { 
-            background: rgba(245, 230, 211, 0.9); padding: 40px; border-radius: 15px; 
-            text-align: center; width: 85%; border: 2px solid var(--main-gold);
-            box-shadow: 0 0 20px rgba(78, 52, 46, 0.2);
+        .container { 
+            background: #fff; padding: 40px; border-radius: 20px; 
+            border: 5px double var(--gold); box-shadow: 0 0 30px rgba(93, 64, 55, 0.3);
+            text-align: center; width: 80%; max-width: 400px;
         }
-        h1 { color: var(--main-gold); border-bottom: 2px solid var(--main-gold); padding-bottom: 10px; }
-        input, button { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid var(--main-gold); border-radius: 5px; background: #fff; }
-        button { background: var(--main-gold); color: white; cursor: pointer; font-weight: bold; }
+        h1 { font-family: 'El Messiri', sans-serif; color: var(--gold); border-bottom: 2px solid var(--gold); display: inline-block; padding: 0 20px; }
+        input, button { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid var(--gold); border-radius: 8px; }
+        button { background: var(--gold); color: #fff; cursor: pointer; font-size: 18px; font-weight: bold; }
         
-        /* تصميم الظرف */
-        #envelope { 
+        #envelope-overlay { 
             position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: var(--bg-cream); display: none; justify-content: center; align-items: center; 
-            flex-direction: column; z-index: 999; 
+            background: rgba(93, 64, 55, 0.95); display: none; flex-direction: column; 
+            justify-content: center; align-items: center; z-index: 1000; color: #fff;
         }
-        .envelope-card { 
-            border: 3px double var(--main-gold); padding: 50px; border-radius: 10px; 
-            background: #fff; text-align: center; box-shadow: 0 0 30px rgba(0,0,0,0.1);
-        }
+        .folder-icon { font-size: 80px; cursor: pointer; margin-bottom: 20px; transition: transform 0.3s; }
+        .folder-icon:hover { transform: scale(1.1); }
     </style>
 </head>
 <body>
 
-    <div class="card" id="setup">
+    <div class="container">
         <h1>الله أولاً</h1>
-        <p>تأملي في أسماء الله الحسنى</p>
-        <input type="text" id="names" placeholder="أسماء اللاعبات (فاطمة / مريم / زينب)">
-        <input type="text" id="target" placeholder="اسم الله لهذا اليوم">
-        <input type="file" onchange="loadBg(event)" accept="image/*" style="font-size: 12px;">
+        <p>تدبّروا أسماءه الحسنى</p>
+        <input type="text" id="names" placeholder="الأسماء (سارة / مريم / زينب)">
+        <input type="text" id="target" placeholder="اسم الله المختار">
+        <input type="file" onchange="loadBg(event)" accept="image/*">
         <button onclick="startGame()">بدء التدبر</button>
     </div>
 
-    <div id="envelope">
-        <div class="envelope-card">
-            <h2 id="msg">أعطي الهاتف لـ: ...</h2>
-            <button onclick="openEnvelope()" id="envBtn" style="width: auto;">فتح الظرف</button>
-            <div id="role" style="display:none; font-size: 28px; margin: 20px; color: var(--main-gold);">---</div>
-        </div>
+    <div id="envelope-overlay">
+        <div id="msg" style="font-size: 24px; margin-bottom: 20px;">أعطي الهاتف لـ: ...</div>
+        <div class="folder-icon" onclick="openEnvelope()" id="envIcon">📂</div>
+        <div id="role" style="display:none; font-size: 32px; font-weight: bold; color: var(--gold);">---</div>
+        <button id="closeBtn" style="display:none; width: 50%;" onclick="closeEnvelope()">تم (إغلاق الظرف)</button>
     </div>
 
     <script>
         let roles = [], currentIndex = 0;
-
         function loadBg(e) {
             let reader = new FileReader();
-            reader.onload = function(){ document.body.style.backgroundImage = "url('" + reader.result + "')"; }
+            reader.onload = function(){ document.body.style.backgroundImage = "url('" + reader.result + "')"; document.body.style.backgroundSize = "cover"; }
             reader.readAsDataURL(e.target.files[0]);
         }
-
         function startGame() {
             let names = document.getElementById('names').value.split('/').map(n => n.trim());
             let target = document.getElementById('target').value;
             let spyIdx = Math.floor(Math.random() * names.length);
-            roles = names.map((n, i) => ({ name: n, role: (i === spyIdx ? "أنتِ المتأملة (الدخيلة)" : target) }));
+            roles = names.map((n, i) => ({ name: n, role: (i === spyIdx ? "أنتِ المتأملة" : target) }));
             currentIndex = 0;
             showNext();
         }
-
         function showNext() {
             if(currentIndex < roles.length) {
                 document.getElementById('msg').innerText = "أعطي الهاتف لـ: " + roles[currentIndex].name;
                 document.getElementById('role').style.display = "none";
-                document.getElementById('envBtn').style.display = "inline-block";
-                document.getElementById('envBtn').innerText = "فتح الظرف";
-                document.getElementById('envBtn').onclick = openEnvelope;
-                document.getElementById('envelope').style.display = "flex";
+                document.getElementById('closeBtn').style.display = "none";
+                document.getElementById('envIcon').style.display = "block";
+                document.getElementById('envelope-overlay').style.display = "flex";
             } else {
-                alert("انتهت الجلسة، تقبل الله منا ومنكم.");
-                document.getElementById('envelope').style.display = "none";
+                alert("تقبل الله منكم صالح الأعمال.");
+                document.getElementById('envelope-overlay').style.display = "none";
             }
         }
-
         function openEnvelope() {
             document.getElementById('role').innerText = roles[currentIndex].role;
             document.getElementById('role').style.display = "block";
-            document.getElementById('envBtn').innerText = "تم (إغلاق)";
-            document.getElementById('envBtn').onclick = closeEnvelope;
+            document.getElementById('envIcon').style.display = "none";
+            document.getElementById('closeBtn').style.display = "block";
         }
-
         function closeEnvelope() {
             currentIndex++;
             showNext();
