@@ -4,76 +4,73 @@
     <meta charset="UTF-8">
     <title>لعبة الأسماء الإيمانية</title>
     <style>
-        body { transition: background 0.5s; font-family: sans-serif; text-align: center; padding: 20px; color: white; margin: 0; }
-        .card { background: rgba(0,0,0,0.3); padding: 20px; border-radius: 20px; backdrop-filter: blur(10px); }
+        body { background-size: cover; background-position: center; height: 100vh; margin: 0; display: flex; justify-content: center; align-items: center; color: white; font-family: sans-serif; transition: background 0.5s; }
+        .card { background: rgba(0,0,0,0.6); padding: 30px; border-radius: 20px; text-align: center; width: 80%; backdrop-filter: blur(5px); }
+        input, button { width: 90%; padding: 15px; margin: 10px 0; border-radius: 10px; border: none; font-size: 16px; }
         
-        /* تصميم اللافتة الكبيرة (الخصوصية) */
-        #overlay {
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-            background: #1a1a2e; display: none; justify-content: center;
-            align-items: center; flex-direction: column; z-index: 1000;
-        }
-        
-        input, button { width: 90%; padding: 15px; margin: 10px 0; border-radius: 10px; border: none; font-size: 18px; }
-        button { background: #4ecca3; cursor: pointer; font-weight: bold; }
-        
-        #result-text { font-size: 32px; font-weight: bold; margin-bottom: 30px; }
+        /* تأثير الظرف */
+        #envelope { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #2c3e50; display: none; justify-content: center; align-items: center; flex-direction: column; z-index: 999; }
+        .envelope-btn { background: #f1c40f; color: black; padding: 20px 40px; border-radius: 50px; cursor: pointer; font-size: 20px; font-weight: bold; }
     </style>
 </head>
-<body style="background-color: #1a1a2e;">
+<body>
 
-    <div class="card">
+    <div class="card" id="setup">
         <h1>إعدادات الجولة</h1>
-        <input type="text" id="names" placeholder="الأسماء (سارة, مريم, ...)">
+        <input type="text" id="names" placeholder="الأسماء (سارة / مريم / زينب)">
         <input type="text" id="target" placeholder="اسم الله المختار">
-        <button onclick="startGame()">تجهيز الجولة</button>
-        <button onclick="changeTheme()" style="background: #e94560;">تغيير الخلفية</button>
-        <div id="historyBox" style="font-size: 14px; margin-top: 20px;">السجل: لم يبدأ بعد</div>
+        <input type="file" onchange="loadBg(event)" accept="image/*">
+        <button onclick="startGame()">بدء اللعبة</button>
     </div>
 
-    <div id="overlay">
-        <h2 id="turn-name">---</h2>
-        <div id="result-text">---</div>
-        <button onclick="closeOverlay()" style="background: #ffffff; color: #1a1a2e;">تم (إخفاء)</button>
+    <div id="envelope">
+        <h2 id="msg">أعطي الهاتف لـ: ...</h2>
+        <div class="envelope-btn" onclick="openEnvelope()" id="envBtn">فتح الظرف</div>
+        <div id="role" style="display:none; font-size: 30px; margin: 20px;">---</div>
     </div>
 
     <script>
         let roles = [], currentIndex = 0;
 
+        function loadBg(e) {
+            let reader = new FileReader();
+            reader.onload = function(){ document.body.style.backgroundImage = "url('" + reader.result + "')"; }
+            reader.readAsDataURL(e.target.files[0]);
+        }
+
         function startGame() {
-            let names = document.getElementById('names').value.split(',').map(n => n.trim());
+            let names = document.getElementById('names').value.split('/').map(n => n.trim());
             let target = document.getElementById('target').value;
             let spyIdx = Math.floor(Math.random() * names.length);
             roles = names.map((n, i) => ({ name: n, role: (i === spyIdx ? "أنتِ الدخيلة!" : target) }));
             currentIndex = 0;
-            document.getElementById('historyBox').innerText = "تم التجهيز، اضغطي هنا للبدء:";
-            
-            // إضافة زر البدء بعد التجهيز
-            let btn = document.createElement("button");
-            btn.innerText = "كشف الدور للاعبة التالية";
-            btn.onclick = showNext;
-            document.querySelector('.card').appendChild(btn);
+            showNext();
         }
 
         function showNext() {
-            if (currentIndex < roles.length) {
-                let p = roles[currentIndex];
-                document.getElementById('turn-name').innerText = "دور الأخت: " + p.name;
-                document.getElementById('result-text').innerText = p.role;
-                document.getElementById('overlay').style.display = "flex";
-                
-                document.getElementById('historyBox').innerText = "اللاعبات اللواتي انتهى دورهن: " + (currentIndex + 1);
+            if(currentIndex < roles.length) {
+                document.getElementById('msg').innerText = "أعطي الهاتف لـ: " + roles[currentIndex].name;
+                document.getElementById('role').style.display = "none";
+                document.getElementById('envBtn').style.display = "block";
+                document.getElementById('envelope').style.display = "flex";
+            } else {
+                alert("انتهت الجولة!");
+                document.getElementById('envelope').style.display = "none";
             }
         }
 
-        function closeOverlay() {
-            document.getElementById('overlay').style.display = "none";
-            currentIndex++;
+        function openEnvelope() {
+            document.getElementById('role').innerText = roles[currentIndex].role;
+            document.getElementById('role').style.display = "block";
+            document.getElementById('envBtn').innerText = "تم (إغلاق الظرف)";
+            document.getElementById('envBtn').onclick = closeEnvelope;
         }
 
-        function changeTheme() {
-            const colors = ["#1a1a2e", "#2c3e50", "#4a148c", "#1b5e20"];
-            document.body.style.backgroundColor = colors[Math.floor(Math.random() * colors.length)];
+        function closeEnvelope() {
+            currentIndex++;
+            document.getElementById('envBtn').innerText = "فتح الظرف";
+            document.getElementById('envBtn').onclick = openEnvelope;
+            showNext();
         }
     </script>
 </body>
