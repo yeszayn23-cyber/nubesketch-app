@@ -2,86 +2,67 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&family=El+Messiri:wght@400;700&display=swap" rel="stylesheet">
+    <title>اللعبة الإيمانية</title>
+    <!-- إضافة الخطوط لجمالية إسلامية -->
+    <link href="https://fonts.googleapis.com/css2?family=Amiri:wght@400;700&display=swap" rel="stylesheet">
     <style>
-        :root { --gold: #b8860b; --cream: #fdf5e6; --brown: #5d4037; }
-        body { 
-            background-color: var(--cream);
-            font-family: 'Amiri', serif; 
-            margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh;
-        }
-        .container { 
-            background: #fff; padding: 40px; border-radius: 20px; 
-            border: 5px double var(--gold); box-shadow: 0 0 30px rgba(93, 64, 55, 0.3);
-            text-align: center; width: 80%; max-width: 400px;
-        }
-        h1 { font-family: 'El Messiri', sans-serif; color: var(--gold); border-bottom: 2px solid var(--gold); display: inline-block; padding: 0 20px; }
+        :root { --gold: #c5a059; --bg: #f5e6d3; }
+        body { background-color: var(--bg); font-family: 'Amiri', serif; margin: 0; display: flex; justify-content: center; align-items: center; height: 100vh; }
+        .container { background: #fff; padding: 30px; border-radius: 20px; border: 3px double var(--gold); text-align: center; width: 85%; max-width: 400px; }
         input, button { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid var(--gold); border-radius: 8px; }
-        button { background: var(--gold); color: #fff; cursor: pointer; font-size: 18px; font-weight: bold; }
-        
-        #envelope-overlay { 
-            position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
-            background: rgba(93, 64, 55, 0.95); display: none; flex-direction: column; 
-            justify-content: center; align-items: center; z-index: 1000; color: #fff;
-        }
-        .folder-icon { font-size: 80px; cursor: pointer; margin-bottom: 20px; transition: transform 0.3s; }
-        .folder-icon:hover { transform: scale(1.1); }
+        button { background: var(--gold); color: white; cursor: pointer; font-weight: bold; }
+        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: none; flex-direction: column; justify-content: center; align-items: center; z-index: 1000; color: white; }
     </style>
 </head>
 <body>
 
     <div class="container">
         <h1>الله أولاً</h1>
-        <p>تدبّروا أسماءه الحسنى</p>
         <input type="text" id="names" placeholder="الأسماء (سارة / مريم / زينب)">
-        <input type="text" id="target" placeholder="اسم الله المختار">
-        <input type="file" onchange="loadBg(event)" accept="image/*">
+        <input type="text" id="targets" placeholder="أسماء الله المتاحة (اللطيف / الهادي / البصير)">
         <button onclick="startGame()">بدء التدبر</button>
     </div>
 
-    <div id="envelope-overlay">
-        <div id="msg" style="font-size: 24px; margin-bottom: 20px;">أعطي الهاتف لـ: ...</div>
-        <div class="folder-icon" onclick="openEnvelope()" id="envIcon">📂</div>
-        <div id="role" style="display:none; font-size: 32px; font-weight: bold; color: var(--gold);">---</div>
-        <button id="closeBtn" style="display:none; width: 50%;" onclick="closeEnvelope()">تم (إغلاق الظرف)</button>
+    <div id="overlay">
+        <div id="turn-msg" style="font-size: 20px;"></div>
+        <div style="font-size: 80px; cursor: pointer;" onclick="openEnv()">📂</div>
+        <div id="role-msg" style="display:none; font-size: 32px; color: var(--gold);">---</div>
+        <button id="closeBtn" style="display:none; width: 50%;" onclick="next()">تم (إغلاق)</button>
     </div>
 
     <script>
         let roles = [], currentIndex = 0;
-        function loadBg(e) {
-            let reader = new FileReader();
-            reader.onload = function(){ document.body.style.backgroundImage = "url('" + reader.result + "')"; document.body.style.backgroundSize = "cover"; }
-            reader.readAsDataURL(e.target.files[0]);
-        }
+
         function startGame() {
             let names = document.getElementById('names').value.split('/').map(n => n.trim());
-            let target = document.getElementById('target').value;
+            let targets = document.getElementById('targets').value.split('/').map(n => n.trim());
+            
+            // البوت يختار اسماً عشوائياً من القائمة
+            let chosenTarget = targets[Math.floor(Math.random() * targets.length)];
             let spyIdx = Math.floor(Math.random() * names.length);
-            roles = names.map((n, i) => ({ name: n, role: (i === spyIdx ? "أنتِ المتأملة" : target) }));
+            
+            roles = names.map((n, i) => ({ name: n, role: (i === spyIdx ? "أنتِ المتأملة (الدخيلة)" : chosenTarget) }));
             currentIndex = 0;
-            showNext();
+            next();
         }
-        function showNext() {
+
+        function next() {
             if(currentIndex < roles.length) {
-                document.getElementById('msg').innerText = "أعطي الهاتف لـ: " + roles[currentIndex].name;
-                document.getElementById('role').style.display = "none";
+                document.getElementById('turn-msg').innerText = "أعطي الهاتف لـ: " + roles[currentIndex].name;
+                document.getElementById('role-msg').style.display = "none";
                 document.getElementById('closeBtn').style.display = "none";
-                document.getElementById('envIcon').style.display = "block";
-                document.getElementById('envelope-overlay').style.display = "flex";
+                document.getElementById('overlay').style.display = "flex";
             } else {
-                alert("تقبل الله منكم صالح الأعمال.");
-                document.getElementById('envelope-overlay').style.display = "none";
+                alert("انتهت الجولة.");
+                document.getElementById('overlay').style.display = "none";
             }
         }
-        function openEnvelope() {
-            document.getElementById('role').innerText = roles[currentIndex].role;
-            document.getElementById('role').style.display = "block";
-            document.getElementById('envIcon').style.display = "none";
+
+        function openEnv() {
+            document.getElementById('role-msg').innerText = roles[currentIndex].role;
+            document.getElementById('role-msg').style.display = "block";
             document.getElementById('closeBtn').style.display = "block";
-        }
-        function closeEnvelope() {
             currentIndex++;
-            showNext();
         }
     </script>
 </body>
